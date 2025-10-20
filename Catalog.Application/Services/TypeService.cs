@@ -1,6 +1,7 @@
 using Catalog.Common.Dtos;
 using Catalog.Common.Models;
 using Catalog.Infrastructure.Repositories.Interfaces;
+using FluentResults;
 
 namespace Catalog.Application.Services;
 
@@ -17,6 +18,7 @@ public class TypeService
     {
         var response = await _repository.CreateAsync(new CatalogType()
         {
+            Id = type.Id,
             Type = type.Name
         });
         
@@ -30,16 +32,26 @@ public class TypeService
         return response.IsFailed ? [] : response.Value;
     }
 
-    public async Task<CatalogType?> GetTypeAsync(int id)
+    public async Task<CatalogType?> GetTypeAsync(string id)
     {
-        var response = await _repository.GetByIdAsync(id);
-        
+        Result<CatalogType> response;
+
+        if (int.TryParse(id, out var idInt))
+            response = await _repository.GetByLegacyIdAsync(idInt);
+        else 
+            response = await _repository.GetByIdAsync(id);
+
         return response.IsFailed ? null : response.Value;
     }
 
-    public async Task<string> GetTypeNameAsync(int id)
+    public async Task<string> GetTypeNameAsync(string id)
     {
-        var response = await _repository.GetByIdAsync(id);
+        Result<CatalogType> response;
+
+        if (int.TryParse(id, out var idInt))
+            response = await _repository.GetByLegacyIdAsync(idInt);
+        else 
+            response = await _repository.GetByIdAsync(id);
 
         return response.IsFailed ? string.Empty : response.Value.Type;
     }

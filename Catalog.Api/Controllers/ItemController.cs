@@ -17,18 +17,18 @@ public class ItemController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<CatalogItemCreateDto>>> GetCatalogItemsAsync()
+    public async Task<ActionResult<IEnumerable<CreateCatalogItemDto>>> GetCatalogItemsAsync()
     {
         var response = await _catalogService.GetAllAsync();
 
-        if (!response.Any())
+        if (response is null)
             return NotFound();
         
         return Ok(response);
     }
     
-    [HttpGet("{id:int}")]
-    public async Task<ActionResult<CatalogItemCreateDto>> GetCatalogItemAsync(int id)
+    [HttpGet("{id}")]
+    public async Task<ActionResult<CreateCatalogItemDto>> GetCatalogItemAsync(string id)
     {
         var response = await _catalogService.GetByIdAsync(id);
 
@@ -39,7 +39,7 @@ public class ItemController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<ActionResult<CatalogItemCreateDto>> CreateCatalogItemAsync([FromBody] CatalogItem item)
+    public async Task<ActionResult<CatalogItem>> CreateCatalogItemAsync([FromBody] CreateCatalogItemDto item)
     {
         var response = await _catalogService.CreateAsync(item);
 

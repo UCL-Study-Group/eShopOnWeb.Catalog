@@ -20,14 +20,14 @@ public class CatalogService
         _typeService = typeService;
     }
     
-    public async Task<IEnumerable<CatalogItemCreateDto>?> GetAllAsync()
+    public async Task<IEnumerable<CreateCatalogItemDto>?> GetAllAsync()
     {
         var results = await _itemRepository.GetAllAsync();
 
         if (results.IsFailed)
             return null;
         
-        var mappedTask = results.Value.Select(async r => new CatalogItemCreateDto()
+        var mappedTask = results.Value.Select(async r => new CreateCatalogItemDto()
         {
             Name = r.Name,
             Price = r.Price,
@@ -42,14 +42,14 @@ public class CatalogService
         return mapped;
     }
 
-    public async Task<CatalogItemCreateDto?> GetByIdAsync(int id)
+    public async Task<CreateCatalogItemDto?> GetByIdAsync(string id)
     {
         var result = await _itemRepository.GetByIdAsync(id);
 
         if (result.IsFailed)
             return null;
 
-        return new CatalogItemCreateDto()
+        return new CreateCatalogItemDto()
         {
             Name = result.Value.Name,
             Price = result.Value.Price,
@@ -60,22 +60,19 @@ public class CatalogService
         };
     }
 
-    public async Task<CatalogItemCreateDto?> CreateAsync(CatalogItem catalogItem)
+    public async Task<CatalogItem?> CreateAsync(CreateCatalogItemDto catalogItem)
     {
-        var result = await _itemRepository.CreateAsync(catalogItem);
-
-        if (result.IsFailed)
-            return null;
-        
-        return new CatalogItemCreateDto()
+        var result = await _itemRepository.CreateAsync(new CatalogItem
         {
-            Name = result.Value.Name,
-            Price = result.Value.Price,
-            ImageUrl = result.Value.ImageUrl,
-            Description = result.Value.Description,
-            CatalogBrand = await _brandService.GetBrandNameAsync(result.Value.CatalogBrandId),
-            CatalogType = await _typeService.GetTypeNameAsync(result.Value.CatalogTypeId)
-        };
+            Name = catalogItem.Name,
+            Price = catalogItem.Price,
+            ImageUrl = catalogItem.ImageUrl,
+            Description = catalogItem.Description,
+            CatalogBrandId = catalogItem.CatalogBrand,
+            CatalogTypeId = catalogItem.CatalogType,
+        });
+
+        return result.IsFailed ? null : result.Value;
     }
 
     public async Task<Result> UpdateAsync(CatalogItem catalogItem)

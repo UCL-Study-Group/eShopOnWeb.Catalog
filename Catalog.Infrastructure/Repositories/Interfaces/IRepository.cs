@@ -15,7 +15,15 @@ public interface IRepository<T>
     /// </summary>
     /// <param name="id">The id of the type</param>
     /// <returns>The entity if found</returns>
-    Task<Result<T>> GetByIdAsync(int id);
+    Task<Result<T>> GetByIdAsync(string id);
+    
+    /// <summary>
+    /// Retrieves the first entity with the provided id.
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
+    [Obsolete("Get by legacy will be replaced in the future")]
+    Task<Result<T>> GetByLegacyIdAsync(int id);
     
     
     /// <summary>

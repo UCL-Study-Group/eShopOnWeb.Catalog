@@ -40,7 +40,23 @@ public class MongoRepository<T> : MongoDbContext, IRepository<T> where T : BaseM
         }
     }
     
-    public async Task<Result<T>> GetByIdAsync(int id)
+    public async Task<Result<T>> GetByIdAsync(string id)
+    {
+        try
+        {
+            // Again, since the collection is defined we just need to 
+            // specify which entity to retrieve
+            var query = await _collection.FindAsync(e => e.MongoId == id);
+
+            return Result.Ok(query.FirstOrDefault());
+        }
+        catch (Exception)
+        {
+            return Result.Fail("Couldn't find an item with the specified id");
+        }
+    }
+    
+    public async Task<Result<T>> GetByLegacyIdAsync(int id)
     {
         try
         {

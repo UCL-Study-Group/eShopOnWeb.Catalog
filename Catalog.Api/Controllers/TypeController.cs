@@ -27,8 +27,8 @@ public class TypeController : ControllerBase
         return Ok(response);
     }
 
-    [HttpGet("{id:int}")]
-    public async Task<ActionResult<CatalogType?>> GetTypeAsync(int id)
+    [HttpGet("{id}")]
+    public async Task<ActionResult<CatalogType?>> GetTypeAsync(string id)
     {
         var response = await _typeService.GetTypeAsync(id);
 

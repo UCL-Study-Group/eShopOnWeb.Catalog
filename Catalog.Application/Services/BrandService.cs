@@ -8,7 +8,7 @@ namespace Catalog.Application.Services;
 public class BrandService
 {
     private readonly IRepository<CatalogBrand> _repository;
-    
+
     public BrandService(IRepository<CatalogBrand> repository)
     {
         _repository = repository;
@@ -18,9 +18,10 @@ public class BrandService
     {
         var response = await _repository.CreateAsync(new CatalogBrand()
         {
+            Id = brand.Id,
             Brand = brand.Name
         });
-        
+
         return response.IsFailed ? null : response.Value;
     }
 
@@ -31,16 +32,26 @@ public class BrandService
         return response.IsFailed ? null : response.ValueOrDefault;
     }
 
-    public async Task<CatalogBrand?> GetBrandAsync(int id)
+    public async Task<CatalogBrand?> GetBrandAsync(string id)
     {
-        var response = await _repository.GetByIdAsync(id);
+        Result<CatalogBrand> response; 
         
+        if (int.TryParse(id, out var idInt))
+            response = await _repository.GetByLegacyIdAsync(idInt);
+        else
+            response = await _repository.GetByIdAsync(id);
+
         return response.IsFailed ? null : response.Value;
     }
 
-    public async Task<string> GetBrandNameAsync(int id)
+    public async Task<string> GetBrandNameAsync(string id)
     {
-        var response = await _repository.GetByIdAsync(id);
+        Result<CatalogBrand> response; 
+        
+        if (int.TryParse(id, out var idInt))
+            response = await _repository.GetByLegacyIdAsync(idInt);
+        else
+            response = await _repository.GetByIdAsync(id);
 
         return response.IsFailed ? string.Empty : response.Value.Brand;
     }
