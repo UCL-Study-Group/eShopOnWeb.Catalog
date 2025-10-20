@@ -1,7 +1,10 @@
+using Catalog.Common.Models;
+using Catalog.Common.Models.Base;
 using Catalog.Infrastructure.Context;
-using Catalog.Infrastructure.Interfaces;
 using Catalog.Infrastructure.Models;
+using Catalog.Infrastructure.Repositories.Interfaces;
 using FluentResults;
+using Microsoft.Extensions.Configuration;
 using MongoDB.Driver;
 
 namespace Catalog.Infrastructure.Repositories;
@@ -12,25 +15,21 @@ namespace Catalog.Infrastructure.Repositories;
 /// accepts is the CatalogItem
 /// </summary>
 /// <typeparam name="T"></typeparam>
-public class MongoRepository<T> : MongoDbContext, IRepository<T> where T : CatalogItem
+public class MongoRepository<T> : MongoDbContext, IRepository<T> where T : BaseModel
 {
     private readonly IMongoCollection<T> _collection;
 
-    public MongoRepository()
+    public MongoRepository(IConfiguration configuration) : base(configuration)
     {
         _collection = Database.GetCollection<T>(typeof(T).Name);
     }
     
-    /// <summary>
-    /// Retrieves all entities of the provided type from the database
-    /// </summary>
-    /// <returns>A collection of entities</returns>
     public async Task<Result<IEnumerable<T>>> GetAllAsync()
     {
         try
         {
             // Since we already have defined the connection and collection
-            // we can simply retrievve the entities with Find()
+            // we can simply retrieve the entities with Find()
             var items = await _collection.Find(_ => true).ToListAsync();
 
             return Result.Ok(items.AsEnumerable());
@@ -40,12 +39,7 @@ public class MongoRepository<T> : MongoDbContext, IRepository<T> where T : Catal
             return Result.Fail("Could not retrieve collection");
         }
     }
-
-    /// <summary>
-    /// Retrieves the first entity with the provided id.
-    /// </summary>
-    /// <param name="id">The id of the type</param>
-    /// <returns>The entity if found</returns>
+    
     public async Task<Result<T>> GetByIdAsync(int id)
     {
         try
@@ -62,18 +56,13 @@ public class MongoRepository<T> : MongoDbContext, IRepository<T> where T : Catal
         }
     }
 
-    /// <summary>
-    /// Creates a new entity of the provided type and saves it
-    /// </summary>
-    /// <param name="entity">The entity that is to be created</param>
-    /// <returns>A result indicating success or failure</returns>
-    public async Task<Result> CreateAsync(T entity)
+    public async Task<Result<T>> CreateAsync(T entity)
     {
         try
         {
             await _collection.InsertOneAsync(entity);
 
-            return Result.Ok();
+            return Result.Ok(entity);
         }
         catch (Exception)
         {
@@ -81,11 +70,6 @@ public class MongoRepository<T> : MongoDbContext, IRepository<T> where T : Catal
         }
     }
 
-    /// <summary>
-    /// Updates an already existing entity with provided one
-    /// </summary>
-    /// <param name="entity">The entity which should be updated</param>
-    /// <returns>A result indicating success or failure</returns>
     public async Task<Result> UpdateAsync(T entity)
     {
         try
@@ -103,11 +87,6 @@ public class MongoRepository<T> : MongoDbContext, IRepository<T> where T : Catal
         }
     }
 
-    /// <summary>
-    /// Removes the entity matching the id provided 
-    /// </summary>
-    /// <param name="id">The id of the entity to be deleted</param>
-    /// <returns>A result indicating success or failure</returns>
     public async Task<Result> DeleteAsync(int id)
     {
         try

@@ -7,28 +7,20 @@ namespace Catalog.Infrastructure.Context;
 /// <summary>
 /// Most of this code is taken from a previous project I worked on
 /// </summary>
-public class MongoDbContext
+public abstract class MongoDbContext
 {
     protected readonly IMongoDatabase Database;
 
-    protected MongoDbContext()
+    protected MongoDbContext(IConfiguration configuration)
     {
         // I've decided to place the configuration files inside a config.json
         // since it should make it easier to configure while debugging
-        var jsonConfig = Path.Combine(Directory.GetCurrentDirectory(), "Properties", "config.json");
-
-        if (!File.Exists(jsonConfig))
-            throw new FileNotFoundException("Found no configuration file");
-
-        // Here we fetch and build the configuration
-        var config = new ConfigurationBuilder()
-            .AddJsonFile(jsonConfig)
-            .Build();
+        var config = configuration ?? throw new ArgumentNullException(nameof(configuration));
 
         // Here I bind my credentials to the DbCredentials Object
         // so we can use it to create the client and database connection
         DbCredentials credentials = new();
-        config.GetSection("Mongo").Bind(credentials);
+        config.GetSection("DocumentDb").Bind(credentials);
         
         var client = new MongoClient(credentials.ConnectionString);
         

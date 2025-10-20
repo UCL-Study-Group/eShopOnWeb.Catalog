@@ -1,0 +1,18 @@
+services:
+  mongo-db:
+    image: mongo:8
+    restart: unless-stopped
+    container_name: mongodb-db
+    healthcheck:
+      test: [ "CMD", "mongosh", "--eval", "db.adminCommand('ping')" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    ports:
+      - 27017:27017
+    volumes:
+      - ./data/mongodb-data:/data/db
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD=root
+      - MONGO_INITDB_DATABASE=CatalogDatabase

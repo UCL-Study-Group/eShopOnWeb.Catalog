@@ -11,8 +11,13 @@
         <PackageReference Include="Microsoft.Extensions.Configuration" Version="10.0.0-rc.1.25451.107" />
         <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="10.0.0-rc.1.25451.107" />
         <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.0-rc.1.25451.107" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.10" />
         <PackageReference Include="MongoDB.Bson" Version="3.5.0"/>
         <PackageReference Include="MongoDB.Driver" Version="3.5.0"/>
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Catalog.Common\Catalog.Common.csproj" />
     </ItemGroup>
 
 </Project>
