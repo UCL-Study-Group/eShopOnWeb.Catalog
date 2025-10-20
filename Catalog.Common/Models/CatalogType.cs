@@ -4,5 +4,5 @@ namespace Catalog.Common.Models;
 
 public class CatalogType : BaseModel
 {
-    public required string Type { get; init; }
+    public required string Name { get; init; }
 }

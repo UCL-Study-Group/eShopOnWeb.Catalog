@@ -19,7 +19,7 @@ public class TypeService
         var response = await _repository.CreateAsync(new CatalogType()
         {
             Id = type.Id,
-            Type = type.Name
+            Name = type.Name
         });
         
         return response.IsFailed ? null : response.Value;
@@ -53,6 +53,6 @@ public class TypeService
         else 
             response = await _repository.GetByIdAsync(id);
 
-        return response.IsFailed ? string.Empty : response.Value.Type;
+        return response.IsFailed ? string.Empty : response.Value.Name;
     }
 }

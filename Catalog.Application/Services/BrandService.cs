@@ -19,7 +19,7 @@ public class BrandService
         var response = await _repository.CreateAsync(new CatalogBrand()
         {
             Id = brand.Id,
-            Brand = brand.Name
+            Name = brand.Name
         });
 
         return response.IsFailed ? null : response.Value;
@@ -53,6 +53,6 @@ public class BrandService
         else
             response = await _repository.GetByIdAsync(id);
 
-        return response.IsFailed ? string.Empty : response.Value.Brand;
+        return response.IsFailed ? string.Empty : response.Value.Name;
     }
 }
