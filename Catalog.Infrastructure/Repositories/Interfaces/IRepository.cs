@@ -47,5 +47,5 @@ public interface IRepository<T>
     /// </summary>
     /// <param name="id">The id of the entity to be deleted</param>
     /// <returns>A result indicating success or failure</returns>
-    Task<Result> DeleteAsync(int id);
+    Task<Result> DeleteAsync(string id);
 }

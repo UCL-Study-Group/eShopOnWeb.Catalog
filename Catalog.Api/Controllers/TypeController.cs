@@ -39,10 +39,26 @@ public class TypeController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<ActionResult<CatalogType>> PostTypeAsync([FromBody] CreateCatalogTypeDto model)
+    public async Task<ActionResult<CatalogType>> PostTypeAsync([FromQuery] CreateCatalogTypeDto model)
     {
         var response = await _typeService.CreateTypeAsync(model);
 
         return response is null ? Problem("Failed to create CatalogType") : Ok(response);
+    }
+    
+    [HttpPut]
+    public async Task<ActionResult> UpdateTypeAsync([FromQuery] UpdateCatalogTypeDto type)
+    {
+        var response = await _typeService.UpdateBrandAsync(type);
+        
+        return response.IsFailed ? Problem("Failed to update brand, try again") : Ok();
+    }
+
+    [HttpDelete("{id}")]
+    public async Task<ActionResult> DeleteTypeAsync(string id)
+    {
+        var response = await _typeService.DeleteBrandAsync(id);
+        
+        return response.IsFailed ? Problem("Failed to delete brand, try again") : Ok();
     }
 }

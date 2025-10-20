@@ -90,9 +90,12 @@ public class MongoRepository<T> : MongoDbContext, IRepository<T> where T : BaseM
     {
         try
         {
-            // This one stands out, since ReplaceOneAsync() requires
-            // us to define a filter, for it to get the entity.
-            var filter = Builders<T>.Filter.Eq(e => e.Id, entity.Id);
+            FilterDefinition<T> filter;
+            
+            if (entity.Id is not null)
+                filter = Builders<T>.Filter.Eq(e => e.Id, entity.Id);
+            else
+                filter = Builders<T>.Filter.Eq(e => e.MongoId, entity.MongoId);
             
             await _collection.ReplaceOneAsync(filter, entity);
             
@@ -103,11 +106,14 @@ public class MongoRepository<T> : MongoDbContext, IRepository<T> where T : BaseM
         }
     }
 
-    public async Task<Result> DeleteAsync(int id)
+    public async Task<Result> DeleteAsync(string id)
     {
         try
         {
-            await _collection.DeleteOneAsync(e => e.Id == id);
+            if (int.TryParse(id, out var idInt))
+                await _collection.DeleteOneAsync(e => e.Id == idInt);
+            else
+                await _collection.DeleteOneAsync(e => e.MongoId == id);
             
             return Result.Ok();
         }

@@ -55,4 +55,41 @@ public class TypeService
 
         return response.IsFailed ? string.Empty : response.Value.Name;
     }
+    
+    public async Task<Result> UpdateBrandAsync(UpdateCatalogTypeDto type)
+    {
+        if (type.Id is null && string.IsNullOrEmpty(type.MongoId))
+            return Result.Fail("You need to provide an ID");
+
+        Result<CatalogType> existingBrand;
+
+        if (type.Id is not null)
+            existingBrand = await _repository.GetByLegacyIdAsync(type.Id.Value);
+        else
+            existingBrand = await _repository.GetByIdAsync(type.MongoId!);
+
+        if (existingBrand.IsFailed || existingBrand.Value is null)
+            return Result.Fail("Type not found");
+
+        var updatedBrand = new CatalogType()
+        {
+            Id = existingBrand.Value.Id,
+            Name = type.Name,
+            MongoId = existingBrand.Value.MongoId
+        };
+        
+        var response = await _repository.UpdateAsync(updatedBrand);
+        
+        return response.IsFailed ? Result.Fail(response.Errors) : Result.Ok();
+    }
+
+    public async Task<Result> DeleteBrandAsync(string id)
+    {
+        if (string.IsNullOrEmpty(id))
+            return Result.Fail("You much provide an id");
+
+        var response = await _repository.DeleteAsync(id);
+        
+        return response.IsFailed ? Result.Fail(response.Errors) : Result.Ok();
+    }
 }

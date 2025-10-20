@@ -17,7 +17,7 @@ public class ItemController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<CreateCatalogItemDto>>> GetCatalogItemsAsync()
+    public async Task<ActionResult<IEnumerable<GetCatalogItemDto>>> GetCatalogItemsAsync()
     {
         var response = await _catalogService.GetAllAsync();
 
@@ -28,7 +28,7 @@ public class ItemController : ControllerBase
     }
     
     [HttpGet("{id}")]
-    public async Task<ActionResult<CreateCatalogItemDto>> GetCatalogItemAsync(string id)
+    public async Task<ActionResult<GetCatalogItemDto>> GetCatalogItemAsync(string id)
     {
         var response = await _catalogService.GetByIdAsync(id);
 
@@ -39,10 +39,26 @@ public class ItemController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<ActionResult<CatalogItem>> CreateCatalogItemAsync([FromBody] CreateCatalogItemDto item)
+    public async Task<ActionResult<CatalogItem>> CreateCatalogItemAsync([FromQuery] CreateCatalogItemDto item)
     {
         var response = await _catalogService.CreateAsync(item);
 
         return response is null ? Problem("Failed to create catalog item. Try again") : Ok(response);
+    }
+
+    [HttpPut]
+    public async Task<ActionResult> UpdateCatalogItemAsync([FromQuery] UpdateCatalogItemDto item)
+    {
+        var response = await _catalogService.UpdateAsync(item);
+        
+        return response.IsFailed ? Problem("Failed to update catalog item. Try again") : Ok();
+    }
+
+    [HttpDelete("{id}")]
+    public async Task<ActionResult> DeleteCatalogItemAsync(string id)
+    {
+        var response = await _catalogService.DeleteAsync(id);
+        
+        return response.IsFailed ? Problem("Failed to delete item. Try again") : Ok();
     }
 }
