@@ -2,7 +2,7 @@ using FluentResults;
 
 namespace Catalog.Infrastructure.Repositories.Interfaces;
 
-public interface IRepository<T>
+public interface IDbRepository<T>
 {
     /// <summary>
     /// Retrieves all entities of the provided type from the database

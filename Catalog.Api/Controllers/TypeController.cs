@@ -1,3 +1,4 @@
+using Catalog.Application.Interfaces;
 using Catalog.Application.Services;
 using Catalog.Common.Dtos;
 using Catalog.Common.Models;
@@ -9,9 +10,9 @@ namespace Catalog.Api.Controllers;
 [Route("api/catalog-types")]
 public class TypeController : ControllerBase
 {
-    private readonly TypeService _typeService;
+    private readonly ITypeService _typeService;
 
-    public TypeController(TypeService typeService)
+    public TypeController(ITypeService typeService)
     {
         _typeService = typeService;
     }

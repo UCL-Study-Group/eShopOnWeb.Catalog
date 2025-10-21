@@ -8,23 +8,23 @@ namespace Catalog.Application.Services;
 
 public class ItemService : IItemService
 {
-    private readonly IRepository<CatalogItem> _itemRepository;
+    private readonly IDbRepository<CatalogItem> _itemDbRepository;
     private readonly IBrandService _brandService;
     private readonly ITypeService _typeService;
 
     public ItemService(
-        IRepository<CatalogItem> itemRepository, 
+        IDbRepository<CatalogItem> itemDbRepository, 
         IBrandService brandService, 
         ITypeService typeService)
     {
-        _itemRepository = itemRepository;
+        _itemDbRepository = itemDbRepository;
         _brandService = brandService;
         _typeService = typeService;
     }
     
     public async Task<IEnumerable<GetCatalogItemDto>?> GetAllAsync()
     {
-        var results = await _itemRepository.GetAllAsync();
+        var results = await _itemDbRepository.GetAllAsync();
 
         if (results.IsFailed)
             return null;
@@ -48,7 +48,7 @@ public class ItemService : IItemService
 
     public async Task<GetCatalogItemDto?> GetAsync(string id)
     {
-        var result = await _itemRepository.GetByIdAsync(id);
+        var result = await _itemDbRepository.GetByIdAsync(id);
 
         if (result.IsFailed)
             return null;
@@ -68,7 +68,7 @@ public class ItemService : IItemService
 
     public async Task<CatalogItem?> CreateAsync(CreateCatalogItemDto catalogItem)
     {
-        var result = await _itemRepository.CreateAsync(new CatalogItem
+        var result = await _itemDbRepository.CreateAsync(new CatalogItem
         {
             Name = catalogItem.Name,
             Price = catalogItem.Price,
@@ -89,9 +89,9 @@ public class ItemService : IItemService
         Result<CatalogItem> existingBrand;
 
         if (catalogItem.Id is not null)
-            existingBrand = await _itemRepository.GetByLegacyIdAsync(catalogItem.Id.Value);
+            existingBrand = await _itemDbRepository.GetByLegacyIdAsync(catalogItem.Id.Value);
         else
-            existingBrand = await _itemRepository.GetByIdAsync(catalogItem.MongoId!);
+            existingBrand = await _itemDbRepository.GetByIdAsync(catalogItem.MongoId!);
 
         var updatedItem = new CatalogItem
         {
@@ -105,14 +105,14 @@ public class ItemService : IItemService
             CatalogTypeId = catalogItem.CatalogType ?? existingBrand.Value.CatalogTypeId,
         };
         
-        var result = await _itemRepository.UpdateAsync(updatedItem);
+        var result = await _itemDbRepository.UpdateAsync(updatedItem);
         
         return result.IsFailed ? Result.Fail(result.Errors) : Result.Ok();
     }
 
     public async Task<Result> DeleteAsync(string id)
     {
-        var result = await _itemRepository.DeleteAsync(id);
+        var result = await _itemDbRepository.DeleteAsync(id);
         
         return result.IsFailed ? Result.Fail(result.Errors) : Result.Ok();
     }

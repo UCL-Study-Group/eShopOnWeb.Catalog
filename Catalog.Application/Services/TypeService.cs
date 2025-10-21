@@ -8,16 +8,16 @@ namespace Catalog.Application.Services;
 
 public class TypeService : ITypeService
 {
-    private readonly IRepository<CatalogType> _repository;
+    private readonly IDbRepository<CatalogType> _dbRepository;
 
-    public TypeService(IRepository<CatalogType> repository)
+    public TypeService(IDbRepository<CatalogType> dbRepository)
     {
-        _repository = repository;
+        _dbRepository = dbRepository;
     }
     
     public async Task<CatalogType?> CreateAsync(CreateCatalogTypeDto type)
     {
-        var response = await _repository.CreateAsync(new CatalogType()
+        var response = await _dbRepository.CreateAsync(new CatalogType()
         {
             Id = type.Id,
             Name = type.Name
@@ -28,7 +28,7 @@ public class TypeService : ITypeService
 
     public async Task<IEnumerable<CatalogType>?> GetAllAsync()
     {
-        var response = await _repository.GetAllAsync();
+        var response = await _dbRepository.GetAllAsync();
         
         return response.IsFailed ? [] : response.Value;
     }
@@ -38,9 +38,9 @@ public class TypeService : ITypeService
         Result<CatalogType> response;
 
         if (int.TryParse(id, out var idInt))
-            response = await _repository.GetByLegacyIdAsync(idInt);
+            response = await _dbRepository.GetByLegacyIdAsync(idInt);
         else 
-            response = await _repository.GetByIdAsync(id);
+            response = await _dbRepository.GetByIdAsync(id);
 
         return response.IsFailed ? null : response.Value;
     }
@@ -50,9 +50,9 @@ public class TypeService : ITypeService
         Result<CatalogType> response;
 
         if (int.TryParse(id, out var idInt))
-            response = await _repository.GetByLegacyIdAsync(idInt);
+            response = await _dbRepository.GetByLegacyIdAsync(idInt);
         else 
-            response = await _repository.GetByIdAsync(id);
+            response = await _dbRepository.GetByIdAsync(id);
 
         return response.IsFailed ? string.Empty : response.Value.Name;
     }
@@ -65,9 +65,9 @@ public class TypeService : ITypeService
         Result<CatalogType> existingBrand;
 
         if (type.Id is not null)
-            existingBrand = await _repository.GetByLegacyIdAsync(type.Id.Value);
+            existingBrand = await _dbRepository.GetByLegacyIdAsync(type.Id.Value);
         else
-            existingBrand = await _repository.GetByIdAsync(type.MongoId!);
+            existingBrand = await _dbRepository.GetByIdAsync(type.MongoId!);
 
         if (existingBrand.IsFailed || existingBrand.Value is null)
             return Result.Fail("Type not found");
@@ -79,7 +79,7 @@ public class TypeService : ITypeService
             MongoId = existingBrand.Value.MongoId
         };
         
-        var response = await _repository.UpdateAsync(updatedBrand);
+        var response = await _dbRepository.UpdateAsync(updatedBrand);
         
         return response.IsFailed ? Result.Fail(response.Errors) : Result.Ok();
     }
@@ -89,7 +89,7 @@ public class TypeService : ITypeService
         if (string.IsNullOrEmpty(id))
             return Result.Fail("You much provide an id");
 
-        var response = await _repository.DeleteAsync(id);
+        var response = await _dbRepository.DeleteAsync(id);
         
         return response.IsFailed ? Result.Fail(response.Errors) : Result.Ok();
     }

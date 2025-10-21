@@ -1,6 +1,4 @@
-using Catalog.Common.Models;
 using Catalog.Common.Models.Base;
-using Catalog.Infrastructure.Context;
 using Catalog.Infrastructure.Models;
 using Catalog.Infrastructure.Repositories.Interfaces;
 using FluentResults;
@@ -15,13 +13,24 @@ namespace Catalog.Infrastructure.Repositories;
 /// accepts is the CatalogItem
 /// </summary>
 /// <typeparam name="T"></typeparam>
-public class MongoRepository<T> : MongoDbContext, IRepository<T> where T : BaseModel
+public class MongoRepository<T> : IDbRepository<T> where T : BaseModel
 {
     private readonly IMongoCollection<T> _collection;
 
-    public MongoRepository(IConfiguration configuration) : base(configuration)
+    public MongoRepository(IConfiguration configuration)
     {
-        _collection = Database.GetCollection<T>(typeof(T).Name);
+        var config = configuration ?? throw new ArgumentNullException(nameof(configuration));
+
+        // Bind credentials from configuration
+        DbCredentials credentials = new();
+        config.GetSection("DocumentDb").Bind(credentials);
+        
+        // Create MongoDB client and get database
+        var client = new MongoClient(credentials.ConnectionString);
+        var database = client.GetDatabase(credentials.DatabaseName);
+        
+        // Get the collection based on the type name
+        _collection = database.GetCollection<T>(typeof(T).Name);
     }
     
     public async Task<Result<IEnumerable<T>>> GetAllAsync()

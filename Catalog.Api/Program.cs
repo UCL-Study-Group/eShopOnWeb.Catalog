@@ -1,3 +1,4 @@
+using Catalog.Api.Middleware;
 using Catalog.Application;
 using Catalog.Application.Services;
 using Catalog.Common.Models;
@@ -19,7 +20,7 @@ public class Program
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
 
-        builder.Services.AddInfrastructure();
+        builder.Services.AddInfrastructure(builder.Configuration);
         builder.Services.AddApplication(builder.Configuration);
 
         var app = builder.Build();
@@ -38,6 +39,8 @@ public class Program
         app.UseHttpsRedirection();
         app.UseAuthorization();
         app.MapControllers();
+
+        app.UseCacheMiddleware();
 
         app.Run();
     }
