@@ -14,7 +14,7 @@ public class CacheMiddleware
     public async Task InvokeAsync(HttpContext context, ICacheService cacheService)
     {
         // Ignores the request, if it is an GET request
-        if (context.Request.Method != "GET")
+        if (context.Request.Method != HttpMethods.Get)
         {
             await _next(context);
             return;
@@ -47,23 +47,33 @@ public class CacheMiddleware
         var originalBodyStream = context.Response.Body;
         using var responseBody = new MemoryStream();
         context.Response.Body = responseBody;
-        
-        await _next(context);
-        
-        // Read what the controller returned
-        responseBody.Seek(0, SeekOrigin.Begin);
-        var responseText = await new StreamReader(responseBody).ReadToEndAsync();
-        
-        // We wouldn't want to save if it failed, so we check for status code!
-        if (context.Response.StatusCode == 200 && !string.IsNullOrEmpty(responseText))
+
+        try
         {
-            await cacheService.InsertCacheAsync(cacheKey, responseText);
+            await _next(context);
+
+            // Read what the controller returned
+            responseBody.Seek(0, SeekOrigin.Begin);
+            var responseText = await new StreamReader(responseBody).ReadToEndAsync();
+
+            // We wouldn't want to save if it failed, so we check for status code!
+            if (context.Response.StatusCode == 200 && !string.IsNullOrEmpty(responseText))
+            {
+                await cacheService.InsertCacheAsync(cacheKey, responseText);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Failed to insert response into cache: " + ex.Message);
+        }
+        finally
+        {
+            // Send the response to the client
+            responseBody.Seek(0, SeekOrigin.Begin);
+            await responseBody.CopyToAsync(originalBodyStream);
+            context.Response.Body = originalBodyStream;
         }
         
-        // Send the response to the client
-        responseBody.Seek(0, SeekOrigin.Begin);
-        await responseBody.CopyToAsync(originalBodyStream);
-        context.Response.Body = originalBodyStream;
     }
     
     private static string GetCacheKey(HttpRequest request)
