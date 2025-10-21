@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Catalog.Api.Controllers;
 
 [ApiController]
-[Route("[controller]")]
+[Route("api/catalog-types")]
 public class TypeController : ControllerBase
 {
     private readonly TypeService _typeService;

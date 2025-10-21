@@ -1,3 +1,4 @@
+using Catalog.Application.Interfaces;
 using Catalog.Common.Dtos;
 using Catalog.Common.Models;
 using Catalog.Infrastructure.Repositories.Interfaces;
@@ -5,7 +6,7 @@ using FluentResults;
 
 namespace Catalog.Application.Services;
 
-public class TypeService
+public class TypeService : ITypeService
 {
     private readonly IRepository<CatalogType> _repository;
 

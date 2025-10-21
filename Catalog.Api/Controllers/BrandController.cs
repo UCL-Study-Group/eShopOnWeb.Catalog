@@ -1,3 +1,4 @@
+using Catalog.Application.Interfaces;
 using Catalog.Application.Services;
 using Catalog.Common.Dtos;
 using Catalog.Common.Models;
@@ -6,12 +7,12 @@ using Microsoft.AspNetCore.Mvc;
 namespace Catalog.Api.Controllers;
 
 [ApiController]
-[Route("[controller]")]
+[Route("api/catalog-brands")]
 public class BrandController : ControllerBase
 {
-    private readonly BrandService _brandService;
+    private readonly IBrandService _brandService;
 
-    public BrandController(BrandService brandService)
+    public BrandController(IBrandService brandService)
     {
         _brandService = brandService;
     }

@@ -1,3 +1,4 @@
+using Catalog.Application.Interfaces;
 using Catalog.Common.Dtos;
 using Catalog.Common.Models;
 using Catalog.Infrastructure.Repositories.Interfaces;
@@ -5,15 +6,16 @@ using FluentResults;
 
 namespace Catalog.Application.Services;
 
-public class CatalogService
+public class ItemService : IItemService
 {
     private readonly IRepository<CatalogItem> _itemRepository;
-    private readonly BrandService _brandService;
-    private readonly TypeService _typeService;
+    private readonly IBrandService _brandService;
+    private readonly ITypeService _typeService;
 
-    public CatalogService(
+    public ItemService(
         IRepository<CatalogItem> itemRepository, 
-        BrandService brandService, TypeService typeService)
+        IBrandService brandService, 
+        ITypeService typeService)
     {
         _itemRepository = itemRepository;
         _brandService = brandService;
