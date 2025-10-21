@@ -31,7 +31,7 @@ public class ItemController : ControllerBase
     [HttpGet("{id}")]
     public async Task<ActionResult<GetCatalogItemDto>> GetCatalogItemAsync(string id)
     {
-        var response = await _itemService.GetByIdAsync(id);
+        var response = await _itemService.GetAsync(id);
 
         if (response is null)
             return NotFound();

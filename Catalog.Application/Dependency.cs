@@ -1,5 +1,7 @@
 using Catalog.Application.Interfaces;
 using Catalog.Application.Services;
+using Catalog.Common.Dtos;
+using Catalog.Common.Models;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 

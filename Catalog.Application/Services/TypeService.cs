@@ -15,7 +15,7 @@ public class TypeService : ITypeService
         _repository = repository;
     }
     
-    public async Task<CatalogType?> CreateTypeAsync(CreateCatalogTypeDto type)
+    public async Task<CatalogType?> CreateAsync(CreateCatalogTypeDto type)
     {
         var response = await _repository.CreateAsync(new CatalogType()
         {
@@ -26,14 +26,14 @@ public class TypeService : ITypeService
         return response.IsFailed ? null : response.Value;
     }
 
-    public async Task<IEnumerable<CatalogType>?> GetTypesAsync()
+    public async Task<IEnumerable<CatalogType>?> GetAllAsync()
     {
         var response = await _repository.GetAllAsync();
         
         return response.IsFailed ? [] : response.Value;
     }
 
-    public async Task<CatalogType?> GetTypeAsync(string id)
+    public async Task<CatalogType?> GetAsync(string id)
     {
         Result<CatalogType> response;
 
@@ -45,7 +45,7 @@ public class TypeService : ITypeService
         return response.IsFailed ? null : response.Value;
     }
 
-    public async Task<string> GetTypeNameAsync(string id)
+    public async Task<string> GetNameAsync(string id)
     {
         Result<CatalogType> response;
 
@@ -57,7 +57,7 @@ public class TypeService : ITypeService
         return response.IsFailed ? string.Empty : response.Value.Name;
     }
     
-    public async Task<Result> UpdateBrandAsync(UpdateCatalogTypeDto type)
+    public async Task<Result> UpdateAsync(UpdateCatalogTypeDto type)
     {
         if (type.Id is null && string.IsNullOrEmpty(type.MongoId))
             return Result.Fail("You need to provide an ID");
@@ -84,7 +84,7 @@ public class TypeService : ITypeService
         return response.IsFailed ? Result.Fail(response.Errors) : Result.Ok();
     }
 
-    public async Task<Result> DeleteBrandAsync(string id)
+    public async Task<Result> DeleteAsync(string id)
     {
         if (string.IsNullOrEmpty(id))
             return Result.Fail("You much provide an id");

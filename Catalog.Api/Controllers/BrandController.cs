@@ -1,5 +1,4 @@
 using Catalog.Application.Interfaces;
-using Catalog.Application.Services;
 using Catalog.Common.Dtos;
 using Catalog.Common.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -20,7 +19,7 @@ public class BrandController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<IEnumerable<CatalogBrand>>> GetBrandsAsync()
     {
-        var response = await _brandService.GetBrandsAsync();
+        var response = await _brandService.GetAllAsync();
 
         if (response is null)
             return NotFound();
@@ -31,7 +30,7 @@ public class BrandController : ControllerBase
     [HttpGet("{id}")]
     public async Task<ActionResult<CatalogBrand>> GetBrandAsync(string id)
     {
-        var response = await _brandService.GetBrandAsync(id);
+        var response = await _brandService.GetAsync(id);
         
         if (response is null)
             return NotFound();
@@ -42,7 +41,7 @@ public class BrandController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<CatalogBrand>> CreateBrandAsync([FromQuery] CreateCatalogBrandDto brand)
     {
-        var response = await _brandService.CreateBrandAsync(brand);
+        var response = await _brandService.CreateAsync(brand);
 
         return response is null ? Problem("Failed to create Brand, try again") : Ok(response);
     }
@@ -50,7 +49,7 @@ public class BrandController : ControllerBase
     [HttpPut]
     public async Task<ActionResult> UpdateBrandAsync([FromQuery] UpdateCatalogBrandDto brand)
     {
-        var response = await _brandService.UpdateBrandAsync(brand);
+        var response = await _brandService.UpdateAsync(brand);
         
         return response.IsFailed ? Problem("Failed to update brand, try again") : Ok();
     }
@@ -58,7 +57,7 @@ public class BrandController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<ActionResult> DeleteBrandAsync(string id)
     {
-        var response = await _brandService.DeleteBrandAsync(id);
+        var response = await _brandService.DeleteAsync(id);
         
         return response.IsFailed ? Problem("Failed to delete brand, try again") : Ok();
     }

@@ -37,8 +37,8 @@ public class ItemService : IItemService
             Price = r.Price,
             ImageUrl = r.ImageUrl,
             Description = r.Description,
-            CatalogBrand = await _brandService.GetBrandNameAsync(r.CatalogBrandId),
-            CatalogType = await _typeService.GetTypeNameAsync(r.CatalogTypeId)
+            CatalogBrand = await _brandService.GetNameAsync(r.CatalogBrandId),
+            CatalogType = await _typeService.GetNameAsync(r.CatalogTypeId)
         });
         
         var mapped = await Task.WhenAll(mappedTask);
@@ -46,7 +46,7 @@ public class ItemService : IItemService
         return mapped;
     }
 
-    public async Task<GetCatalogItemDto?> GetByIdAsync(string id)
+    public async Task<GetCatalogItemDto?> GetAsync(string id)
     {
         var result = await _itemRepository.GetByIdAsync(id);
 
@@ -61,8 +61,8 @@ public class ItemService : IItemService
             Price = result.Value.Price,
             ImageUrl = result.Value.ImageUrl,
             Description = result.Value.Description,
-            CatalogBrand = await _brandService.GetBrandNameAsync(result.Value.CatalogBrandId),
-            CatalogType = await _typeService.GetTypeNameAsync(result.Value.CatalogTypeId)
+            CatalogBrand = await _brandService.GetNameAsync(result.Value.CatalogBrandId),
+            CatalogType = await _typeService.GetNameAsync(result.Value.CatalogTypeId)
         };
     }
 

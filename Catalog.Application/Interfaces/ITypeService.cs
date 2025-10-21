@@ -4,12 +4,7 @@ using FluentResults;
 
 namespace Catalog.Application.Interfaces;
 
-public interface ITypeService
+public interface ITypeService : ICatalogService<CatalogType, CreateCatalogTypeDto, UpdateCatalogTypeDto, CatalogType>
 {
-    Task<CatalogType?> CreateTypeAsync(CreateCatalogTypeDto type);
-    Task<IEnumerable<CatalogType>?> GetTypesAsync();
-    Task<CatalogType?> GetTypeAsync(string id);
-    Task<string> GetTypeNameAsync(string id);
-    Task<Result> UpdateBrandAsync(UpdateCatalogTypeDto type);
-    Task<Result> DeleteBrandAsync(string id);
+    Task<string> GetNameAsync(string id);
 }

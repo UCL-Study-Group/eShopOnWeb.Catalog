@@ -15,36 +15,6 @@ public class BrandService : IBrandService
         _repository = repository;
     }
 
-    public async Task<CatalogBrand?> CreateBrandAsync(CreateCatalogBrandDto brand)
-    {
-        var response = await _repository.CreateAsync(new CatalogBrand()
-        {
-            Id = brand.Id,
-            Name = brand.Name
-        });
-
-        return response.IsFailed ? null : response.Value;
-    }
-
-    public async Task<IEnumerable<CatalogBrand>?> GetBrandsAsync()
-    {
-        var response = await _repository.GetAllAsync();
-
-        return response.IsFailed ? null : response.ValueOrDefault;
-    }
-
-    public async Task<CatalogBrand?> GetBrandAsync(string id)
-    {
-        Result<CatalogBrand> response; 
-        
-        if (int.TryParse(id, out var idInt))
-            response = await _repository.GetByLegacyIdAsync(idInt);
-        else
-            response = await _repository.GetByIdAsync(id);
-
-        return response.IsFailed ? null : response.Value;
-    }
-
     public async Task<string> GetBrandNameAsync(string id)
     {
         Result<CatalogBrand> response; 
@@ -57,17 +27,47 @@ public class BrandService : IBrandService
         return response.IsFailed ? string.Empty : response.Value.Name;
     }
 
-    public async Task<Result> UpdateBrandAsync(UpdateCatalogBrandDto brand)
+    public async Task<CatalogBrand?> CreateAsync(CreateCatalogBrandDto dto)
     {
-        if (brand.Id is null && string.IsNullOrEmpty(brand.MongoId))
+        var response = await _repository.CreateAsync(new CatalogBrand()
+        {
+            Id = dto.Id,
+            Name = dto.Name
+        });
+
+        return response.IsFailed ? null : response.Value;
+    }
+
+    public async Task<CatalogBrand?> GetAsync(string id)
+    {
+        Result<CatalogBrand> response; 
+        
+        if (int.TryParse(id, out var idInt))
+            response = await _repository.GetByLegacyIdAsync(idInt);
+        else
+            response = await _repository.GetByIdAsync(id);
+
+        return response.IsFailed ? null : response.Value;
+    }
+
+    public async Task<IEnumerable<CatalogBrand>?> GetAllAsync()
+    {
+        var response = await _repository.GetAllAsync();
+
+        return response.IsFailed ? null : response.ValueOrDefault;
+    }
+
+    public async Task<Result> UpdateAsync(UpdateCatalogBrandDto dto)
+    {
+        if (dto.Id is null && string.IsNullOrEmpty(dto.MongoId))
             return Result.Fail("You need to provide an ID");
 
         Result<CatalogBrand> existingBrand;
 
-        if (brand.Id is not null)
-            existingBrand = await _repository.GetByLegacyIdAsync(brand.Id.Value);
+        if (dto.Id is not null)
+            existingBrand = await _repository.GetByLegacyIdAsync(dto.Id.Value);
         else
-           existingBrand = await _repository.GetByIdAsync(brand.MongoId!);
+            existingBrand = await _repository.GetByIdAsync(dto.MongoId!);
 
         if (existingBrand.IsFailed || existingBrand.Value is null)
             return Result.Fail("Brand not found");
@@ -75,7 +75,7 @@ public class BrandService : IBrandService
         var updatedBrand = new CatalogBrand()
         {
             Id = existingBrand.Value.Id,
-            Name = brand.Name,
+            Name = dto.Name,
             MongoId = existingBrand.Value.MongoId
         };
         
@@ -84,13 +84,22 @@ public class BrandService : IBrandService
         return response.IsFailed ? Result.Fail(response.Errors) : Result.Ok();
     }
 
-    public async Task<Result> DeleteBrandAsync(string id)
+    public async Task<Result> DeleteAsync(string id)
     {
-        if (string.IsNullOrEmpty(id))
-            return Result.Fail("You much provide an id");
-
-        var response = await _repository.DeleteAsync(id);
+        var result = await _repository.DeleteAsync(id);
         
-        return response.IsFailed ? Result.Fail(response.Errors) : Result.Ok();
+        return result.IsFailed ? Result.Fail(result.Errors) : Result.Ok();
+    }
+
+    public async Task<string> GetNameAsync(string id)
+    {
+        Result<CatalogBrand> response;
+
+        if (int.TryParse(id, out var idInt))
+            response = await _repository.GetByLegacyIdAsync(idInt);
+        else 
+            response = await _repository.GetByIdAsync(id);
+
+        return response.IsFailed ? string.Empty : response.Value.Name;
     }
 }
