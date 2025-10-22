@@ -29,7 +29,9 @@ public class TypeController : ControllerBase
     }
 
     [HttpGet("{id}")]
-    public async Task<ActionResult<CatalogType?>> GetTypeAsync(string id)
+    public async Task<ActionResult<CatalogType?>> GetTypeAsync(
+        string id
+        )
     {
         var response = await _typeService.GetAsync(id);
 
@@ -40,7 +42,9 @@ public class TypeController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<ActionResult<CatalogType>> PostTypeAsync([FromQuery] CreateCatalogTypeDto model)
+    public async Task<ActionResult<CatalogType>> PostTypeAsync(
+        [FromQuery] CreateCatalogTypeDto model
+        )
     {
         var response = await _typeService.CreateAsync(model);
 
@@ -48,7 +52,9 @@ public class TypeController : ControllerBase
     }
     
     [HttpPut]
-    public async Task<ActionResult> UpdateTypeAsync([FromQuery] UpdateCatalogTypeDto type)
+    public async Task<ActionResult> UpdateTypeAsync(
+        [FromQuery] UpdateCatalogTypeDto type
+        )
     {
         var response = await _typeService.UpdateAsync(type);
         
@@ -56,7 +62,9 @@ public class TypeController : ControllerBase
     }
 
     [HttpDelete("{id}")]
-    public async Task<ActionResult> DeleteTypeAsync(string id)
+    public async Task<ActionResult> DeleteTypeAsync(
+        string id
+        )
     {
         var response = await _typeService.DeleteAsync(id);
         

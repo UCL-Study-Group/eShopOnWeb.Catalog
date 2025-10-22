@@ -26,9 +26,9 @@ public class TypeService : ITypeService
         return response.IsFailed ? null : response.Value;
     }
 
-    public async Task<IEnumerable<CatalogType>?> GetAllAsync()
+    public async Task<IEnumerable<CatalogType>?> GetAllAsync(int? pageSize, int? pageIndex)
     {
-        var response = await _dbRepository.GetAllAsync();
+        var response = await _dbRepository.GetAllAsync(pageSize, pageIndex);
         
         return response.IsFailed ? [] : response.Value;
     }

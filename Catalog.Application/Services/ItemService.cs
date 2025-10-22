@@ -22,14 +22,17 @@ public class ItemService : IItemService
         _typeService = typeService;
     }
     
-    public async Task<IEnumerable<GetCatalogItemDto>?> GetAllAsync()
+    public async Task<IEnumerable<GetCatalogItemDto>?> GetAllAsync(
+        int? pageSize, 
+        int? pageIndex
+        )
     {
-        var results = await _itemDbRepository.GetAllAsync();
+        var results = await _itemDbRepository.GetAllAsync(pageSize, pageIndex);
 
         if (results.IsFailed)
             return null;
         
-        var mappedTask = results.Value.Select(async r => new GetCatalogItemDto()
+        var mapped = results.Value.Select(r => new GetCatalogItemDto()
         {
             Id = r.Id,
             MongoId = r.MongoId,
@@ -37,12 +40,37 @@ public class ItemService : IItemService
             Price = r.Price,
             ImageUrl = r.ImageUrl,
             Description = r.Description,
-            CatalogBrand = await _brandService.GetNameAsync(r.CatalogBrandId),
-            CatalogType = await _typeService.GetNameAsync(r.CatalogTypeId)
+            CatalogBrandId = r.CatalogBrandId,
+            CatalogTypeId = r.CatalogTypeId
         });
         
-        var mapped = await Task.WhenAll(mappedTask);
+        return mapped;
+    }
+    
+    public async Task<IEnumerable<GetCatalogItemDto>?> GetAllAsync(
+        int? pageSize, 
+        int? pageIndex,
+        string? brandId,
+        string? typeId
+    )
+    {
+        var results = await _itemDbRepository.GetAllAsync(pageSize, pageIndex, brandId, typeId);
 
+        if (results.IsFailed)
+            return null;
+        
+        var mapped = results.Value.Select( r => new GetCatalogItemDto()
+        {
+            Id = r.Id,
+            MongoId = r.MongoId,
+            Name = r.Name,
+            Price = r.Price,
+            ImageUrl = r.ImageUrl,
+            Description = r.Description,
+            CatalogBrandId = r.CatalogBrandId,
+            CatalogTypeId = r.CatalogTypeId
+        });
+        
         return mapped;
     }
 
@@ -61,8 +89,8 @@ public class ItemService : IItemService
             Price = result.Value.Price,
             ImageUrl = result.Value.ImageUrl,
             Description = result.Value.Description,
-            CatalogBrand = await _brandService.GetNameAsync(result.Value.CatalogBrandId),
-            CatalogType = await _typeService.GetNameAsync(result.Value.CatalogTypeId)
+            CatalogBrandId = result.Value.CatalogBrandId,
+            CatalogTypeId = result.Value.CatalogTypeId
         };
     }
 

@@ -50,9 +50,9 @@ public class BrandService : IBrandService
         return response.IsFailed ? null : response.Value;
     }
 
-    public async Task<IEnumerable<CatalogBrand>?> GetAllAsync()
+    public async Task<IEnumerable<CatalogBrand>?> GetAllAsync(int? pageSize, int? pageIndex)
     {
-        var response = await _dbRepository.GetAllAsync();
+        var response = await _dbRepository.GetAllAsync(pageSize, pageIndex);
 
         return response.IsFailed ? null : response.ValueOrDefault;
     }

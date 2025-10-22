@@ -8,7 +8,7 @@ public interface IDbRepository<T>
     /// Retrieves all entities of the provided type from the database
     /// </summary>
     /// <returns>A collection of entities</returns>
-    Task<Result<IEnumerable<T>>> GetAllAsync();
+    Task<Result<IEnumerable<T>>> GetAllAsync(int? pageSize = null, int? pageIndex = null, string? brandId = null, string? typeId = null);
     
     /// <summary>
     /// Retrieves the first entity with the provided id.

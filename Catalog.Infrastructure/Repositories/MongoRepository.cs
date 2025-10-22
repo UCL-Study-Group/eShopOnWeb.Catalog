@@ -33,13 +33,27 @@ public class MongoRepository<T> : IDbRepository<T> where T : BaseModel
         _collection = database.GetCollection<T>(typeof(T).Name);
     }
     
-    public async Task<Result<IEnumerable<T>>> GetAllAsync()
+    public async Task<Result<IEnumerable<T>>> GetAllAsync(int? pageSize, int? pageIndex, string? brandId = null, string? typeId = null)
     {
         try
         {
+            var filterBuilder = Builders<T>.Filter;
+            var filter = filterBuilder.Empty;
+            
+            if (!string.IsNullOrEmpty(brandId))
+                filter &= filterBuilder.Eq("CatalogBrandId", brandId);
+            
+            if (!string.IsNullOrEmpty(typeId))
+                filter &= filterBuilder.Eq("CatalogTypeId", typeId);
+            
             // Since we already have defined the connection and collection
             // we can simply retrieve the entities with Find()
-            var items = await _collection.Find(_ => true).ToListAsync();
+            var items = await _collection
+                .Find(filter)
+                .SortBy(i => i.Id)
+                .Skip(pageIndex is null ? 0 : (pageIndex - 1) * pageSize)
+                .Limit(pageSize)
+                .ToListAsync();
 
             return Result.Ok(items.AsEnumerable());
         }
