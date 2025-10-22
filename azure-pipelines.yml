@@ -13,7 +13,7 @@ resources:
 
 variables:
   tag: '$(Build.BuildId)'
-  containerRegistry: 'UCLStudyGroup'
+  containerRegistry: 'Docker Hub'
   imageRepository: '$(Build.Repository.Name)'
   dockerfilePath: '**/Dockerfile'
 
