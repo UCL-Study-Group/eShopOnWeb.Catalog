@@ -28,7 +28,7 @@ stages:
             displayName: Build and push image
             inputs:
               command: buildAndPush
-              repository: $(imageRepository)
+              repository: 'gametweak/$(imageRepository)'
               dockerfile: $(dockerfilePath)
               buildContext: '$(Build.SourcesDirectory)'
               containerRegistry: $(containerRegistry)
