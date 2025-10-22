@@ -9,19 +9,14 @@ resources:
 
 variables:
   tag: '$(Build.BuildId)'
+  projectName: $[lower(replace(variables['Build.Repository.Name'], '.', '-'))]
 
-stages:
-  - stage: Build
-    displayName: Build image
-    jobs:
-      - job: Build
-        displayName: Build
-        steps:
-          - task: DockerCompose@0
-            displayName: Build services
-            inputs:
-              action: 'Build services'
-              dockerComposeFile: 'docker-compose.yml'
-              projectName: '$(Build.Repository.Name)'
-              qualifyImageNames: true
-              additionalImageTags: '$(tag)'
+steps:
+  - task: DockerCompose@0
+    displayName: Build services
+    inputs:
+      action: 'Build services'
+      dockerComposeFile: 'docker-compose.yml'
+      projectName: '$(projectName)'
+      qualifyImageNames: true
+      additionalImageTags: '$(tag)'
