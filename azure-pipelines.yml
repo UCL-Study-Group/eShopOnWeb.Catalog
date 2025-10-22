@@ -5,6 +5,9 @@
 trigger:
 - main
 
+pool:
+  name: 'Self Hosted'
+
 resources:
 - repo: self
 
