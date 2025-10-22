@@ -1,10 +1,7 @@
 using Catalog.Api.Middleware;
 using Catalog.Application;
-using Catalog.Application.Services;
-using Catalog.Common.Models;
 using Catalog.Infrastructure;
-using Catalog.Infrastructure.Models;
-using Catalog.Infrastructure.Repositories;
+using Microsoft.OpenApi.Models;
 
 namespace Catalog.Api;
 
@@ -15,10 +12,30 @@ public class Program
         var builder = WebApplication.CreateBuilder(args);
 
         builder.Services.AddControllers();
-        builder.Services.AddOpenApi();
+        
+        builder.Services.AddOpenApi(options =>
+        {
+            options.AddDocumentTransformer((document, _, _) =>
+            {
+                document.Servers = new List<OpenApiServer>
+                {
+                    new() { Url = "http://localhost:8089", Description = "Local Docker API" }
+                };
+                return Task.CompletedTask;
+            });
+        });
         
         builder.Services.AddEndpointsApiExplorer();
-        builder.Services.AddSwaggerGen();
+        
+        builder.Services.AddCors(options =>
+        {
+            options.AddPolicy("AllowAll", policy =>
+            {
+                policy.AllowAnyOrigin()
+                    .AllowAnyMethod()
+                    .AllowAnyHeader();
+            });
+        });
 
         builder.Services.AddInfrastructure(builder.Configuration);
         builder.Services.AddApplication(builder.Configuration);
@@ -36,11 +53,13 @@ public class Program
             options.RoutePrefix = string.Empty;
         });
 
-        app.UseHttpsRedirection();
-        app.UseAuthorization();
-        app.MapControllers();
-
+        app.UseCors("AllowAll");
         app.UseCacheMiddleware();
+        
+        //app.UseHttpsRedirection();
+        app.UseAuthorization();
+        
+        app.MapControllers();
 
         app.Run();
     }
