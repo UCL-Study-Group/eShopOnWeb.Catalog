@@ -1,4 +1,8 @@
+using Catalog.Api.Middleware;
+using Catalog.Application;
 using Catalog.Application.Services;
+using Catalog.Common.Models;
+using Catalog.Infrastructure;
 using Catalog.Infrastructure.Models;
 using Catalog.Infrastructure.Repositories;
 
@@ -16,26 +20,27 @@ public class Program
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
 
-        builder.Services.AddScoped<MongoRepository<CatalogItem>>();
-
-        builder.Services.AddScoped<CatalogService>();
+        builder.Services.AddInfrastructure(builder.Configuration);
+        builder.Services.AddApplication(builder.Configuration);
 
         var app = builder.Build();
 
-        // Configure the HTTP request pipeline.
         if (app.Environment.IsDevelopment())
         {
             app.MapOpenApi();
-            app.UseSwagger();
-            app.UseSwaggerUI();
         }
 
+        app.UseSwaggerUI(options =>
+        {
+            options.SwaggerEndpoint("/openapi/v1.json", "eShopOnWeb Catalog API v1");
+            options.RoutePrefix = string.Empty;
+        });
+
         app.UseHttpsRedirection();
-
         app.UseAuthorization();
-
-
         app.MapControllers();
+
+        app.UseCacheMiddleware();
 
         app.Run();
     }

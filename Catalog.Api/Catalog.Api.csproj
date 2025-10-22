@@ -12,14 +12,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Controllers\" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <Compile Remove="Controllers\WeatherForecastController.cs" />
-    </ItemGroup>
-
-    <ItemGroup>
       <ProjectReference Include="..\Catalog.Application\Catalog.Application.csproj" />
     </ItemGroup>
 
