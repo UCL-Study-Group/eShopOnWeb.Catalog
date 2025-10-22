@@ -16,12 +16,12 @@ stages:
     jobs:
       - job: Build
         displayName: Build
-        # Remove the pool section here entirely!
         steps:
-          - task: Docker@2
-            displayName: Build an image
+          - task: DockerCompose@0
+            displayName: Build services
             inputs:
-              command: build
-              dockerfile: '**/Dockerfile'
-              tags: |
-                $(tag)
+              action: 'Build services'
+              dockerComposeFile: 'docker-compose.yml'
+              projectName: '$(Build.Repository.Name)'
+              qualifyImageNames: true
+              additionalImageTags: '$(tag)'
