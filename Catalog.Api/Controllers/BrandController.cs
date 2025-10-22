@@ -28,7 +28,9 @@ public class BrandController : ControllerBase
     }
 
     [HttpGet("{id}")]
-    public async Task<ActionResult<CatalogBrand>> GetBrandAsync(string id)
+    public async Task<ActionResult<CatalogBrand>> GetBrandAsync(
+        string id
+        )
     {
         var response = await _brandService.GetAsync(id);
         
@@ -39,7 +41,9 @@ public class BrandController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<ActionResult<CatalogBrand>> CreateBrandAsync([FromQuery] CreateCatalogBrandDto brand)
+    public async Task<ActionResult<CatalogBrand>> CreateBrandAsync(
+        [FromQuery] CreateCatalogBrandDto brand
+        )
     {
         var response = await _brandService.CreateAsync(brand);
 
@@ -47,7 +51,9 @@ public class BrandController : ControllerBase
     }
 
     [HttpPut]
-    public async Task<ActionResult> UpdateBrandAsync([FromQuery] UpdateCatalogBrandDto brand)
+    public async Task<ActionResult> UpdateBrandAsync(
+        [FromQuery] UpdateCatalogBrandDto brand
+        )
     {
         var response = await _brandService.UpdateAsync(brand);
         
@@ -55,7 +61,9 @@ public class BrandController : ControllerBase
     }
 
     [HttpDelete("{id}")]
-    public async Task<ActionResult> DeleteBrandAsync(string id)
+    public async Task<ActionResult> DeleteBrandAsync(
+        string id
+        )
     {
         var response = await _brandService.DeleteAsync(id);
         

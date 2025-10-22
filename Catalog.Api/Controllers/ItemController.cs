@@ -18,9 +18,14 @@ public class ItemController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<GetCatalogItemDto>>> GetCatalogItemsAsync()
+    public async Task<ActionResult<IEnumerable<GetCatalogItemDto>>> GetCatalogItemsAsync(
+        int? pageSize, 
+        int? pageIndex,
+        string? brandId,
+        string? typeId
+        )
     {
-        var response = await _itemService.GetAllAsync();
+        var response = await _itemService.GetAllAsync(pageSize, pageIndex, brandId, typeId);
 
         if (response is null)
             return NotFound();
@@ -29,7 +34,9 @@ public class ItemController : ControllerBase
     }
     
     [HttpGet("{id}")]
-    public async Task<ActionResult<GetCatalogItemDto>> GetCatalogItemAsync(string id)
+    public async Task<ActionResult<GetCatalogItemDto>> GetCatalogItemAsync(
+        string id
+        )
     {
         var response = await _itemService.GetAsync(id);
 
@@ -40,7 +47,9 @@ public class ItemController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<ActionResult<CatalogItem>> CreateCatalogItemAsync([FromQuery] CreateCatalogItemDto item)
+    public async Task<ActionResult<CatalogItem>> CreateCatalogItemAsync(
+        [FromQuery] CreateCatalogItemDto item
+        )
     {
         var response = await _itemService.CreateAsync(item);
 
@@ -48,7 +57,9 @@ public class ItemController : ControllerBase
     }
 
     [HttpPut]
-    public async Task<ActionResult> UpdateCatalogItemAsync([FromQuery] UpdateCatalogItemDto item)
+    public async Task<ActionResult> UpdateCatalogItemAsync(
+        [FromQuery] UpdateCatalogItemDto item
+        )
     {
         var response = await _itemService.UpdateAsync(item);
         

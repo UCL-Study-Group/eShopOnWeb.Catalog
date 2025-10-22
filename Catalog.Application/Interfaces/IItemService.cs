@@ -6,4 +6,5 @@ namespace Catalog.Application.Interfaces;
 
 public interface IItemService : ICatalogService<CatalogItem, CreateCatalogItemDto, UpdateCatalogItemDto, GetCatalogItemDto>
 {
+    Task<IEnumerable<GetCatalogItemDto>?> GetAllAsync(int? pageSize = null, int? pageIndex = null, string? brandId = null, string? typeId = null);
 }
