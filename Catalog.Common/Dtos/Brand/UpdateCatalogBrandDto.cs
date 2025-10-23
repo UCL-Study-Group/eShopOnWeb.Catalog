@@ -1,4 +1,4 @@
-namespace Catalog.Common.Dtos;
+namespace Catalog.Common.Dtos.Brand;
 
 public class UpdateCatalogBrandDto
 {

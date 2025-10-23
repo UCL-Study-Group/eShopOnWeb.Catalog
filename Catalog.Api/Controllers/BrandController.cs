@@ -1,5 +1,6 @@
 using Catalog.Application.Interfaces;
 using Catalog.Common.Dtos;
+using Catalog.Common.Dtos.Brand;
 using Catalog.Common.Models;
 using Microsoft.AspNetCore.Mvc;
 
@@ -17,14 +18,14 @@ public class BrandController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<CatalogBrand>>> GetBrandsAsync()
+    public async Task<ActionResult<IEnumerable<GetCatalogBrandDto>>> GetBrandsAsync()
     {
         var response = await _brandService.GetAllAsync();
 
         if (response is null)
             return NotFound();
         
-        return Ok(response);
+        return Ok(response.Select(GetCatalogBrandDto.FromModel));
     }
 
     [HttpGet("{id}")]
@@ -37,7 +38,7 @@ public class BrandController : ControllerBase
         if (response is null)
             return NotFound();
         
-        return Ok(response);
+        return Ok(GetCatalogBrandDto.FromModel(response));
     }
 
     [HttpPost]

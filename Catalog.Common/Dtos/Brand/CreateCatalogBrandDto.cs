@@ -1,6 +1,6 @@
-namespace Catalog.Common.Dtos;
+namespace Catalog.Common.Dtos.Brand;
 
-public class CreateCatalogTypeDto
+public class CreateCatalogBrandDto
 {
     public int? Id { get; set; }
     public required string Name { get; set; }

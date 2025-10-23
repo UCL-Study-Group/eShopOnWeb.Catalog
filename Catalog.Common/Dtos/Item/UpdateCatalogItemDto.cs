@@ -1,6 +1,4 @@
-using System.Text.Json.Serialization;
-
-namespace Catalog.Common.Dtos;
+namespace Catalog.Common.Dtos.Item;
 
 public class UpdateCatalogItemDto
 {

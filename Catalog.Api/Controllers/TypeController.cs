@@ -1,6 +1,7 @@
 using Catalog.Application.Interfaces;
 using Catalog.Application.Services;
 using Catalog.Common.Dtos;
+using Catalog.Common.Dtos.Type;
 using Catalog.Common.Models;
 using Microsoft.AspNetCore.Mvc;
 
@@ -18,18 +19,18 @@ public class TypeController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<CatalogType>>> GetTypesAsync()
+    public async Task<ActionResult<IEnumerable<GetCatalogTypeDto>>> GetTypesAsync()
     {
         var response = await _typeService.GetAllAsync();
 
         if (response is null)
             return NotFound("Collection does not exists");
         
-        return Ok(response);
+        return Ok(response.Select(GetCatalogTypeDto.FromModel));
     }
 
     [HttpGet("{id}")]
-    public async Task<ActionResult<CatalogType?>> GetTypeAsync(
+    public async Task<ActionResult<GetCatalogTypeDto?>> GetTypeAsync(
         string id
         )
     {
@@ -38,7 +39,7 @@ public class TypeController : ControllerBase
         if (response is null)
             return NotFound();
         
-        return Ok(response);
+        return Ok(GetCatalogTypeDto.FromModel(response));
     }
 
     [HttpPost]

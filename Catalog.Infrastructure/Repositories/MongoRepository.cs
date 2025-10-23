@@ -145,4 +145,9 @@ public class MongoRepository<T> : IDbRepository<T> where T : BaseModel
             return Result.Fail("Failed to delete provided id");
         }
     }
+
+    public Task<Result<int>> GetNextIdAsync()
+    {
+        throw new NotImplementedException();
+    }
 }

@@ -1,6 +1,7 @@
 using Catalog.Application.Interfaces;
 using Catalog.Application.Services;
 using Catalog.Common.Dtos;
+using Catalog.Common.Dtos.Item;
 using Catalog.Common.Models;
 using Microsoft.AspNetCore.Mvc;
 
@@ -30,7 +31,7 @@ public class ItemController : ControllerBase
         if (response is null)
             return NotFound();
         
-        return Ok(response);
+        return Ok(new GetCatalogItemsListDto { CatalogItems = response });
     }
     
     [HttpGet("{id}")]

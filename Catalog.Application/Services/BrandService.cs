@@ -1,5 +1,6 @@
 using Catalog.Application.Interfaces;
 using Catalog.Common.Dtos;
+using Catalog.Common.Dtos.Brand;
 using Catalog.Common.Models;
 using Catalog.Infrastructure.Repositories.Interfaces;
 using FluentResults;
