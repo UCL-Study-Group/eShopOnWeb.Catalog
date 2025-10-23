@@ -22,5 +22,4 @@ stages:
   - template: templates/docker-pipeline.yml@templates
     parameters:
       imageRepository: $(imageRepository)
-      runTests: true
       runDeploy: true
