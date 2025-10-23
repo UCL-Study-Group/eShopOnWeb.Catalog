@@ -20,7 +20,7 @@ variables:
     
 stages:
   - template: docker-pipeline.yml@templates
-  parameters:
-    imageRepository: $(imageRepository)
-    runTests: true
-    runDeploy: true
+    parameters:
+      imageRepository: $(imageRepository)
+      runTests: true
+      runDeploy: true
