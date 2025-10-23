@@ -1,4 +1,22 @@
 services:
+  catalog.api:
+    image: ${DOCKER_REGISTRY-}catalogapi
+    build:
+      context: .
+      dockerfile: Catalog.Api/Dockerfile
+    container_name: catalog-api
+    depends_on:
+      - mongo-db
+      - redis-db
+    ports:
+      - 8089:8080
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - DocumentDb__ConnectionString=mongodb://root:root@mongo-db:27017/?authSource=admin
+      - CacheDb__ConnectionString=redis-db:6379
+    networks:
+      - catalog-network
+  
   mongo-db:
     image: mongo:8
     restart: unless-stopped
@@ -11,11 +29,14 @@ services:
     ports:
       - 27017:27017
     volumes:
-      - ./data/mongodb-data:/data/db
+      - catalog_data:/data/db
     environment:
       - MONGO_INITDB_ROOT_USERNAME=root
       - MONGO_INITDB_ROOT_PASSWORD=root
       - MONGO_INITDB_DATABASE=CatalogDatabase
+    networks:
+      - catalog-network
+
   redis-db:
     image: redis:7-alpine
     restart: unless-stopped
@@ -30,6 +51,8 @@ services:
     environment:
       - REDIS_PASSWORD=yourStrong(!)Password
       - REDIS_PORT=6379
+    networks:
+      - catalog-network
 
   insight:
     image: redis/redisinsight
@@ -42,3 +65,12 @@ services:
     environment:
       - RI_REDIS_HOST=redis-db
       - RI_REDIS_PORT=6379
+    networks:
+      - catalog-network
+        
+volumes:
+  catalog_data:
+    
+networks:
+  catalog-network:
+    driver: bridge

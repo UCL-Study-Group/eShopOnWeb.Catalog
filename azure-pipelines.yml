@@ -1,32 +1,37 @@
 # Docker
-# Build a Docker image
+# Build and push a Docker image to Azure Container Registry
 # https://docs.microsoft.com/azure/devops/pipelines/languages/docker
 
 trigger:
-- main
+  - main
 
 pool:
   name: 'Self Hosted'
 
 resources:
-- repo: self
+  - repo: self
 
 variables:
   tag: '$(Build.BuildId)'
+  containerRegistry: 'Docker Hub'
+  imageRepository: '$(Build.Repository.Name)'
+  dockerfilePath: '**/Dockerfile'
 
 stages:
-- stage: Build
-  displayName: Build image
-  jobs:
-  - job: Build
-    displayName: Build
-    pool:
-      vmImage: ubuntu-latest
-    steps:
-    - task: Docker@2
-      displayName: Build an image
-      inputs:
-        command: build
-        dockerfile: '**/Dockerfile'
-        tags: |
-          $(tag)
+  - stage: Build
+    displayName: Build and Push image
+    jobs:
+      - job: Build
+        displayName: Build and Push
+        steps:
+          - task: Docker@2
+            displayName: Build and push image
+            inputs:
+              command: buildAndPush
+              repository: 'gametweak/$(imageRepository)'
+              dockerfile: $(dockerfilePath)
+              buildContext: '$(Build.SourcesDirectory)'
+              containerRegistry: $(containerRegistry)
+              tags: |
+                $(tag)
+                latest
