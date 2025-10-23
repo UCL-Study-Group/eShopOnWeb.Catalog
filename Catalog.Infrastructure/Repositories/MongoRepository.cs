@@ -1,3 +1,5 @@
+using System.Diagnostics.Metrics;
+using Catalog.Common.Models;
 using Catalog.Common.Models.Base;
 using Catalog.Infrastructure.Models;
 using Catalog.Infrastructure.Repositories.Interfaces;
@@ -16,6 +18,7 @@ namespace Catalog.Infrastructure.Repositories;
 public class MongoRepository<T> : IDbRepository<T> where T : BaseModel
 {
     private readonly IMongoCollection<T> _collection;
+    private readonly IMongoCollection<Counter> _counterCollection;
 
     public MongoRepository(IConfiguration configuration)
     {
@@ -31,6 +34,15 @@ public class MongoRepository<T> : IDbRepository<T> where T : BaseModel
         
         // Get the collection based on the type name
         _collection = database.GetCollection<T>(typeof(T).Name);
+        
+        // For the counter collection
+        _counterCollection = database.GetCollection<Counter>(nameof(Counter));
+        
+        // Create unique index on Id field
+        var indexKeys = Builders<T>.IndexKeys.Ascending(e => e.Id);
+        var indexOptions = new CreateIndexOptions { Unique = true };
+        var indexModel = new CreateIndexModel<T>(indexKeys, indexOptions);
+        _collection.Indexes.CreateOneAsync(indexModel).Wait();
     }
     
     public async Task<Result<IEnumerable<T>>> GetAllAsync(int? pageSize, int? pageIndex, string? brandId = null, string? typeId = null)
@@ -99,13 +111,27 @@ public class MongoRepository<T> : IDbRepository<T> where T : BaseModel
     {
         try
         {
+            var idResult = await GetNextIdAsync(entity.Id);
+            if (idResult.IsFailed)
+                return Result.Fail<T>("Failed to get ID");
+    
+            entity.Id = idResult.Value;
+        
+            // Check if item with this ID already exists
+            var existing = await _collection.Find(e => e.Id == entity.Id).FirstOrDefaultAsync();
+            if (existing != null)
+                return Result.Fail<T>($"Item with ID {entity.Id} already exists");
+        
             await _collection.InsertOneAsync(entity);
-
             return Result.Ok(entity);
         }
-        catch (Exception)
+        catch (MongoWriteException ex) when (ex.WriteError?.Category == ServerErrorCategory.DuplicateKey)
         {
-            return Result.Fail("Couldn't create provided item");
+            return Result.Fail("Item with this ID already exists");
+        }
+        catch (Exception ex)
+        {
+            return Result.Fail($"Couldn't create item: {ex.Message}");
         }
     }
 
@@ -146,8 +172,38 @@ public class MongoRepository<T> : IDbRepository<T> where T : BaseModel
         }
     }
 
-    public Task<Result<int>> GetNextIdAsync()
+    private async Task<Result<int>> GetNextIdAsync(int? requestedId = null)
     {
-        throw new NotImplementedException();
+        try
+        {
+            var filter = Builders<Counter>.Filter.Eq(c => c.Id, typeof(T).Name);
+        
+            if (requestedId.HasValue)
+            {
+                var update = Builders<Counter>.Update.Max(c => c.Sequence, requestedId.Value);
+                await _counterCollection.UpdateOneAsync(
+                    filter, 
+                    update, 
+                    new UpdateOptions { IsUpsert = true });
+            
+                return Result.Ok(requestedId.Value);
+            }
+            else
+            {
+                var update = Builders<Counter>.Update.Inc(c => c.Sequence, 1);
+                var options = new FindOneAndUpdateOptions<Counter>
+                {
+                    IsUpsert = true,
+                    ReturnDocument = ReturnDocument.After
+                };
+            
+                var counter = await _counterCollection.FindOneAndUpdateAsync(filter, update, options);
+                return Result.Ok(counter.Sequence);
+            }
+        }
+        catch (Exception ex)
+        {
+            return Result.Fail($"Failed to get next ID: {ex.Message}");
+        }
     }
 }

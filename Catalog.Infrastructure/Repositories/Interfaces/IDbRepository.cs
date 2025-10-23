@@ -48,10 +48,4 @@ public interface IDbRepository<T>
     /// <param name="id">The id of the entity to be deleted</param>
     /// <returns>A result indicating success or failure</returns>
     Task<Result> DeleteAsync(string id);
-
-    /// <summary>
-    /// Returns the next id for the counter
-    /// </summary>
-    /// <returns>Gets the next Id from the database</returns>
-    Task<Result<int>> GetNextIdAsync();
 }

@@ -10,10 +10,14 @@ namespace Catalog.Application.Services;
 public class BrandService : IBrandService
 {
     private readonly IDbRepository<CatalogBrand> _dbRepository;
+    private readonly ICacheService _cacheService;
 
-    public BrandService(IDbRepository<CatalogBrand> dbRepository)
+    public BrandService(
+        IDbRepository<CatalogBrand> dbRepository, 
+        ICacheService cacheService)
     {
         _dbRepository = dbRepository;
+        _cacheService = cacheService;
     }
 
     public async Task<string> GetBrandNameAsync(string id)
@@ -35,6 +39,8 @@ public class BrandService : IBrandService
             Id = dto.Id,
             Name = dto.Name
         });
+        
+        await _cacheService.FlushCacheAsync("cache:/api/catalog-brands");
 
         return response.IsFailed ? null : response.Value;
     }

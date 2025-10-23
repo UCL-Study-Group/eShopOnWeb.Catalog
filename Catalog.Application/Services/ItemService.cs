@@ -10,17 +10,14 @@ namespace Catalog.Application.Services;
 public class ItemService : IItemService
 {
     private readonly IDbRepository<CatalogItem> _itemDbRepository;
-    private readonly IBrandService _brandService;
-    private readonly ITypeService _typeService;
+    private readonly ICacheService _cacheService;
 
     public ItemService(
         IDbRepository<CatalogItem> itemDbRepository, 
-        IBrandService brandService, 
-        ITypeService typeService)
+        ICacheService cacheService)
     {
         _itemDbRepository = itemDbRepository;
-        _brandService = brandService;
-        _typeService = typeService;
+        _cacheService = cacheService;
     }
     
     public async Task<IEnumerable<GetCatalogItemDto>?> GetAllAsync(
@@ -106,6 +103,8 @@ public class ItemService : IItemService
             CatalogBrandId = catalogItem.CatalogBrand,
             CatalogTypeId = catalogItem.CatalogType,
         });
+
+        await _cacheService.FlushCacheAsync("cache:/api/catalog-items");
 
         return result.IsFailed ? null : result.Value;
     }
