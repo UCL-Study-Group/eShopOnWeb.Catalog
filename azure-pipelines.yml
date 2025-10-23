@@ -19,7 +19,7 @@ variables:
   imageRepository: '$(Build.Repository.Name)'
     
 stages:
-  - template: docker-pipeline.yml@templates
+  - template: templates/docker-pipeline.yml@templates
     parameters:
       imageRepository: $(imageRepository)
       runTests: true
