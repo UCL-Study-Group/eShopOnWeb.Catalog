@@ -1,4 +1,4 @@
-namespace Catalog.Common.Dtos;
+namespace Catalog.Common.Dtos.Item;
 
 public class GetCatalogItemDto
 {
@@ -10,4 +10,9 @@ public class GetCatalogItemDto
     public required string ImageUrl { get; init; }
     public required string CatalogTypeId { get; init; }
     public required string CatalogBrandId { get; init; }
+}
+
+public class GetCatalogItemsListDto
+{
+    public required IEnumerable<GetCatalogItemDto> CatalogItems { get; set; }
 }

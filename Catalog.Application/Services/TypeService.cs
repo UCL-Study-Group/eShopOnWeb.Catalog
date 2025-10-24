@@ -1,5 +1,6 @@
 using Catalog.Application.Interfaces;
 using Catalog.Common.Dtos;
+using Catalog.Common.Dtos.Type;
 using Catalog.Common.Models;
 using Catalog.Infrastructure.Repositories.Interfaces;
 using FluentResults;
@@ -9,10 +10,12 @@ namespace Catalog.Application.Services;
 public class TypeService : ITypeService
 {
     private readonly IDbRepository<CatalogType> _dbRepository;
+    private readonly ICacheService _cacheService;
 
-    public TypeService(IDbRepository<CatalogType> dbRepository)
+    public TypeService(IDbRepository<CatalogType> dbRepository, ICacheService cacheService)
     {
         _dbRepository = dbRepository;
+        _cacheService = cacheService;
     }
     
     public async Task<CatalogType?> CreateAsync(CreateCatalogTypeDto type)
@@ -22,6 +25,8 @@ public class TypeService : ITypeService
             Id = type.Id,
             Name = type.Name
         });
+        
+        await _cacheService.FlushCacheAsync("cache:/api/catalog-types");
         
         return response.IsFailed ? null : response.Value;
     }

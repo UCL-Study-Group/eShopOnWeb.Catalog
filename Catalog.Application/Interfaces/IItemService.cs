@@ -1,4 +1,5 @@
 using Catalog.Common.Dtos;
+using Catalog.Common.Dtos.Item;
 using Catalog.Common.Models;
 using FluentResults;
 

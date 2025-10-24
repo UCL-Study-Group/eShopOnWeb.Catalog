@@ -25,12 +25,16 @@ public class RedisCacheService : ICacheService
 
     public async Task<Result<T>> InsertCacheAsync<T>(string key, T value)
     {
-        return await _cacheRepository.SetAsync(key, value);
+        var response = await _cacheRepository.SetAsync(key, value);
+        
+        return response;
     }
 
     public async Task<Result<string>> InsertCacheAsync(string key, string value)
     {
-        return await _cacheRepository.SetAsync(key, value);
+        var response = await _cacheRepository.SetAsync(key, value);
+        
+        return response;
     }
 
     public async Task<Result> DeleteCacheAsync(string key)
@@ -38,8 +42,8 @@ public class RedisCacheService : ICacheService
         return await _cacheRepository.DeleteAsync(key);
     }
 
-    public async Task<Result> FlushCacheAsync()
+    public async Task<Result> FlushCacheAsync(string pattern)
     {
-        return await _cacheRepository.FlushAsync();
+        return await _cacheRepository.FlushAsync(pattern);
     }
 }

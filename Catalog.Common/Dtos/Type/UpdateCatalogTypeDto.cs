@@ -1,4 +1,4 @@
-namespace Catalog.Common.Dtos;
+namespace Catalog.Common.Dtos.Type;
 
 public class UpdateCatalogTypeDto
 {
