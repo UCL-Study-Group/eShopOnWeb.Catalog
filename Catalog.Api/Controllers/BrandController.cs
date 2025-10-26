@@ -18,14 +18,14 @@ public class BrandController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<GetCatalogBrandDto>>> GetBrandsAsync()
+    public async Task<ActionResult<GetCatalogBrandsListDto>> GetBrandsAsync()
     {
         var response = await _brandService.GetAllAsync();
 
         if (response is null)
             return NotFound();
         
-        return Ok(response.Select(GetCatalogBrandDto.FromModel));
+        return Ok(new GetCatalogBrandsListDto { CatalogBrands = response.Select(GetCatalogBrandDto.FromModel)});
     }
 
     [HttpGet("{id}")]
@@ -42,23 +42,26 @@ public class BrandController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<ActionResult<CatalogBrand>> CreateBrandAsync(
-        [FromQuery] CreateCatalogBrandDto brand
+    public async Task<ActionResult<GetCatalogBrandsListDto>> CreateBrandAsync(
+        [FromBody] CreateCatalogBrandDto brand
         )
     {
         var response = await _brandService.CreateAsync(brand);
 
-        return response is null ? Problem("Failed to create Brand, try again") : Ok(response);
+        return response is null ? Problem("Failed to create Brand, try again") : Ok(new
+        {
+            CatalogBrands = new[] { response }
+        });
     }
 
     [HttpPut]
-    public async Task<ActionResult> UpdateBrandAsync(
-        [FromQuery] UpdateCatalogBrandDto brand
+    public async Task<ActionResult<GetCatalogBrandsListDto>> UpdateBrandAsync(
+        [FromBody] UpdateCatalogBrandDto brand
         )
     {
         var response = await _brandService.UpdateAsync(brand);
         
-        return response.IsFailed ? Problem("Failed to update brand, try again") : Ok();
+        return response.IsFailed ? Problem("Failed to update brand, try again") : Ok(response.Value);
     }
 
     [HttpDelete("{id}")]

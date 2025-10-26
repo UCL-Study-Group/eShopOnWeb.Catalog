@@ -19,7 +19,7 @@ public class ItemController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<GetCatalogItemDto>>> GetCatalogItemsAsync(
+    public async Task<ActionResult<GetCatalogItemsListDto>> GetCatalogItemsAsync(
         int? pageSize, 
         int? pageIndex,
         string? brandId,
@@ -35,7 +35,7 @@ public class ItemController : ControllerBase
     }
     
     [HttpGet("{id}")]
-    public async Task<ActionResult<GetCatalogItemDto>> GetCatalogItemAsync(
+    public async Task<ActionResult<object>> GetCatalogItemAsync(
         string id
         )
     {
@@ -44,27 +44,33 @@ public class ItemController : ControllerBase
         if (response is null)
             return NotFound();
         
-        return Ok(response);
+        return Ok(new
+        {
+            CatalogItems = new[] { response }
+        });
     }
 
     [HttpPost]
-    public async Task<ActionResult<CatalogItem>> CreateCatalogItemAsync(
-        [FromQuery] CreateCatalogItemDto item
+    public async Task<ActionResult<GetCatalogItemsListDto>> CreateCatalogItemAsync(
+        [FromBody] CreateCatalogItemDto item
         )
     {
         var response = await _itemService.CreateAsync(item);
 
-        return response is null ? Problem("Failed to create catalog item. Try again") : Ok(response);
+        return response is null ? Problem("Failed to create catalog item. Try again") : Ok(new
+        {
+            CatalogItems = new[] { response }
+        });
     }
 
     [HttpPut]
-    public async Task<ActionResult> UpdateCatalogItemAsync(
-        [FromQuery] UpdateCatalogItemDto item
+    public async Task<ActionResult<GetCatalogItemsListDto>> UpdateCatalogItemAsync(
+        [FromBody] UpdateCatalogItemDto item
         )
     {
         var response = await _itemService.UpdateAsync(item);
         
-        return response.IsFailed ? Problem("Failed to update catalog item. Try again") : Ok();
+        return response.IsFailed ? Problem("Failed to update catalog item. Try again") : Ok(response.Value);
     }
 
     [HttpDelete("{id}")]

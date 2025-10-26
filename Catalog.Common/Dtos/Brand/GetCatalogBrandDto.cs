@@ -16,3 +16,8 @@ public class GetCatalogBrandDto
         };
     }
 }
+
+public class GetCatalogBrandsListDto
+{
+    public IEnumerable<GetCatalogBrandDto> CatalogBrands { get; set; } = [];
+}

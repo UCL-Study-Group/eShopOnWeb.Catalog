@@ -7,7 +7,7 @@ public class UpdateCatalogItemDto
     public string? Name { get; init; }
     public string? Description { get; init; }
     public decimal? Price { get; init; }
-    public string? ImageUrl { get; init; }
-    public string? CatalogType { get; init; }
-    public string? CatalogBrand { get; init; }
+    public string? PictureUri { get; init; }
+    public int? CatalogTypeId { get; init; }
+    public int? CatalogBrandId { get; init; }
 }

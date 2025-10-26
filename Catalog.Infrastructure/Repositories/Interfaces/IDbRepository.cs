@@ -39,7 +39,7 @@ public interface IDbRepository<T>
     /// </summary>
     /// <param name="entity">The entity which should be updated</param>
     /// <returns>A result indicating success or failure</returns>
-    Task<Result> UpdateAsync(T entity);
+    Task<Result<string>> UpdateAsync(T entity);
     
     
     /// <summary>

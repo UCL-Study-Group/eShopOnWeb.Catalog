@@ -19,14 +19,14 @@ public class TypeController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<GetCatalogTypeDto>>> GetTypesAsync()
+    public async Task<ActionResult<GetCatalogTypesListDto>> GetTypesAsync()
     {
         var response = await _typeService.GetAllAsync();
 
         if (response is null)
             return NotFound("Collection does not exists");
         
-        return Ok(response.Select(GetCatalogTypeDto.FromModel));
+        return Ok(new GetCatalogTypesListDto { CatalogTypes = response.Select(GetCatalogTypeDto.FromModel)});
     }
 
     [HttpGet("{id}")]
@@ -43,23 +43,29 @@ public class TypeController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<ActionResult<CatalogType>> PostTypeAsync(
-        [FromQuery] CreateCatalogTypeDto model
+    public async Task<ActionResult<GetCatalogTypesListDto>> PostTypeAsync(
+        [FromBody] CreateCatalogTypeDto model
         )
     {
         var response = await _typeService.CreateAsync(model);
 
-        return response is null ? Problem("Failed to create CatalogType") : Ok(response);
+        return response is null ? Problem("Failed to create CatalogType") : Ok(new
+        {
+            CatalogTypes = response
+        });
     }
     
     [HttpPut]
-    public async Task<ActionResult> UpdateTypeAsync(
-        [FromQuery] UpdateCatalogTypeDto type
+    public async Task<ActionResult<GetCatalogTypesListDto>> UpdateTypeAsync(
+        [FromBody] UpdateCatalogTypeDto type
         )
     {
         var response = await _typeService.UpdateAsync(type);
         
-        return response.IsFailed ? Problem("Failed to update brand, try again") : Ok();
+        return response.IsFailed ? Problem("Failed to update brand, try again") : Ok(new
+        {
+            CatalogTypes = response.Value
+        });
     }
 
     [HttpDelete("{id}")]

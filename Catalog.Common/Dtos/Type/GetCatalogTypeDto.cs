@@ -1,3 +1,4 @@
+using Catalog.Common.Dtos.Item;
 using Catalog.Common.Models;
 
 namespace Catalog.Common.Dtos.Type;
@@ -15,4 +16,9 @@ public class GetCatalogTypeDto
             Name = model.Name,
         };
     }
+}
+
+public class GetCatalogTypesListDto
+{
+    public IEnumerable<GetCatalogTypeDto> CatalogTypes { get; set; } = [];
 }
