@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Catalog.Application.Interfaces;
 using Catalog.Common.Dtos;
 using Catalog.Common.Dtos.Brand;
@@ -64,7 +65,7 @@ public class BrandService : IBrandService
         return response.IsFailed ? null : response.ValueOrDefault;
     }
 
-    public async Task<Result> UpdateAsync(UpdateCatalogBrandDto dto)
+    public async Task<Result<GetCatalogBrandsListDto>> UpdateAsync(UpdateCatalogBrandDto dto)
     {
         if (dto.Id is null && string.IsNullOrEmpty(dto.MongoId))
             return Result.Fail("You need to provide an ID");
@@ -79,7 +80,7 @@ public class BrandService : IBrandService
         if (existingBrand.IsFailed || existingBrand.Value is null)
             return Result.Fail("Brand not found");
 
-        var updatedBrand = new CatalogBrand()
+        var updatedBrand = new CatalogBrand
         {
             Id = existingBrand.Value.Id,
             Name = dto.Name,
@@ -87,8 +88,21 @@ public class BrandService : IBrandService
         };
         
         var response = await _dbRepository.UpdateAsync(updatedBrand);
+
+        if (response.IsFailed)
+            return Result.Fail(response.Errors);
         
-        return response.IsFailed ? Result.Fail(response.Errors) : Result.Ok();
+        await _cacheService.FlushCacheAsync("cache:/api/catalog-brands");
+        
+        var deserialized = JsonSerializer.Deserialize<GetCatalogBrandDto>(response.Value);
+        
+        if (deserialized is null)
+            return Result.Fail("Failed to deserialize brand");
+        
+        return Result.Ok(new GetCatalogBrandsListDto
+        {
+            CatalogBrands = [deserialized]
+        });
     }
 
     public async Task<Result> DeleteAsync(string id)

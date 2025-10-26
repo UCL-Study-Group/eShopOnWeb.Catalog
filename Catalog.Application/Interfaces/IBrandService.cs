@@ -5,7 +5,7 @@ using FluentResults;
 
 namespace Catalog.Application.Interfaces;
 
-public interface IBrandService : ICatalogService<CatalogBrand, CreateCatalogBrandDto, UpdateCatalogBrandDto, CatalogBrand>
+public interface IBrandService : ICatalogService<CatalogBrand, CreateCatalogBrandDto, UpdateCatalogBrandDto, CatalogBrand, GetCatalogBrandsListDto>
 {
     Task<string> GetNameAsync(string id);
 }

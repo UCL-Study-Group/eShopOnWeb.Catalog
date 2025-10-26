@@ -7,9 +7,9 @@ public class GetCatalogItemDto
     public required string Name { get; init; }
     public required string Description { get; init; }
     public required decimal Price { get; init; }
-    public required string ImageUrl { get; init; }
-    public required string CatalogTypeId { get; init; }
-    public required string CatalogBrandId { get; init; }
+    public string? PictureUri { get; init; }
+    public required int CatalogTypeId { get; init; }
+    public required int CatalogBrandId { get; init; }
 }
 
 public class GetCatalogItemsListDto

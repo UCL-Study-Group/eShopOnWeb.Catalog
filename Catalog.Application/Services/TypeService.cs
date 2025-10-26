@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Catalog.Application.Interfaces;
 using Catalog.Common.Dtos;
 using Catalog.Common.Dtos.Type;
@@ -62,7 +63,7 @@ public class TypeService : ITypeService
         return response.IsFailed ? string.Empty : response.Value.Name;
     }
     
-    public async Task<Result> UpdateAsync(UpdateCatalogTypeDto type)
+    public async Task<Result<GetCatalogTypesListDto>> UpdateAsync(UpdateCatalogTypeDto type)
     {
         if (type.Id is null && string.IsNullOrEmpty(type.MongoId))
             return Result.Fail("You need to provide an ID");
@@ -86,7 +87,20 @@ public class TypeService : ITypeService
         
         var response = await _dbRepository.UpdateAsync(updatedBrand);
         
-        return response.IsFailed ? Result.Fail(response.Errors) : Result.Ok();
+        if (response.IsFailed)
+            return Result.Fail(response.Errors);
+        
+        await _cacheService.FlushCacheAsync("cache:/api/catalog-types");
+        
+        var deserialized = JsonSerializer.Deserialize<GetCatalogTypeDto>(response.Value);
+        
+        if (deserialized is null)
+            return Result.Fail("Failed to deserialize brand");
+        
+        return Result.Ok(new GetCatalogTypesListDto()
+        {
+            CatalogTypes = [deserialized]
+        });
     }
 
     public async Task<Result> DeleteAsync(string id)

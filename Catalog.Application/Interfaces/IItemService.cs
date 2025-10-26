@@ -5,7 +5,7 @@ using FluentResults;
 
 namespace Catalog.Application.Interfaces;
 
-public interface IItemService : ICatalogService<CatalogItem, CreateCatalogItemDto, UpdateCatalogItemDto, GetCatalogItemDto>
+public interface IItemService : ICatalogService<CatalogItem, CreateCatalogItemDto, UpdateCatalogItemDto, GetCatalogItemDto, GetCatalogItemsListDto>
 {
     Task<IEnumerable<GetCatalogItemDto>?> GetAllAsync(int? pageSize = null, int? pageIndex = null, string? brandId = null, string? typeId = null);
 }

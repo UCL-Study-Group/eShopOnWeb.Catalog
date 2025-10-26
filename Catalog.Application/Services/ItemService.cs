@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Catalog.Application.Interfaces;
 using Catalog.Common.Dtos;
 using Catalog.Common.Dtos.Item;
@@ -36,7 +37,7 @@ public class ItemService : IItemService
             MongoId = r.MongoId,
             Name = r.Name,
             Price = r.Price,
-            ImageUrl = r.ImageUrl,
+            PictureUri = r.PictureUri,
             Description = r.Description,
             CatalogBrandId = r.CatalogBrandId,
             CatalogTypeId = r.CatalogTypeId
@@ -63,7 +64,7 @@ public class ItemService : IItemService
             MongoId = r.MongoId,
             Name = r.Name,
             Price = r.Price,
-            ImageUrl = r.ImageUrl,
+            PictureUri = r.PictureUri,
             Description = r.Description,
             CatalogBrandId = r.CatalogBrandId,
             CatalogTypeId = r.CatalogTypeId
@@ -85,7 +86,7 @@ public class ItemService : IItemService
             MongoId = result.Value.MongoId,
             Name = result.Value.Name,
             Price = result.Value.Price,
-            ImageUrl = result.Value.ImageUrl,
+            PictureUri = result.Value.PictureUri,
             Description = result.Value.Description,
             CatalogBrandId = result.Value.CatalogBrandId,
             CatalogTypeId = result.Value.CatalogTypeId
@@ -98,10 +99,10 @@ public class ItemService : IItemService
         {
             Name = catalogItem.Name,
             Price = catalogItem.Price,
-            ImageUrl = catalogItem.ImageUrl,
+            PictureUri = catalogItem.PictureUri,
             Description = catalogItem.Description,
-            CatalogBrandId = catalogItem.CatalogBrand,
-            CatalogTypeId = catalogItem.CatalogType,
+            CatalogBrandId = catalogItem.CatalogBrandId,
+            CatalogTypeId = catalogItem.CatalogTypeId,
         });
 
         await _cacheService.FlushCacheAsync("cache:/api/catalog-items");
@@ -109,7 +110,7 @@ public class ItemService : IItemService
         return result.IsFailed ? null : result.Value;
     }
 
-    public async Task<Result> UpdateAsync(UpdateCatalogItemDto catalogItem)
+    public async Task<Result<GetCatalogItemsListDto>> UpdateAsync(UpdateCatalogItemDto catalogItem)
     {
         if (catalogItem.Id is null && string.IsNullOrEmpty(catalogItem.MongoId))
             return Result.Fail("You need to provide an ID");
@@ -127,15 +128,28 @@ public class ItemService : IItemService
             MongoId = existingBrand.Value.MongoId,
             Name = catalogItem.Name ?? existingBrand.Value.Name,
             Price = catalogItem.Price ?? existingBrand.Value.Price,
-            ImageUrl = catalogItem.ImageUrl ?? existingBrand.Value.ImageUrl,
+            PictureUri = catalogItem.PictureUri ?? existingBrand.Value.PictureUri,
             Description = catalogItem.Description ?? existingBrand.Value.Description,
-            CatalogBrandId = catalogItem.CatalogBrand ?? existingBrand.Value.CatalogBrandId,
-            CatalogTypeId = catalogItem.CatalogType ?? existingBrand.Value.CatalogTypeId,
+            CatalogBrandId = catalogItem.CatalogBrandId ?? existingBrand.Value.CatalogBrandId,
+            CatalogTypeId = catalogItem.CatalogTypeId ?? existingBrand.Value.CatalogTypeId,
         };
         
-        var result = await _itemDbRepository.UpdateAsync(updatedItem);
+        var response = await _itemDbRepository.UpdateAsync(updatedItem);
+
+        if (response.IsFailed)
+            return Result.Fail(response.Errors);
         
-        return result.IsFailed ? Result.Fail(result.Errors) : Result.Ok();
+        await _cacheService.FlushCacheAsync("cache:/api/catalog-items");
+        
+        var deserialized = JsonSerializer.Deserialize<GetCatalogItemDto>(response.Value);
+        
+        if (deserialized is null)
+            return Result.Fail("Failed to deserialize brand");
+        
+        return Result.Ok(new GetCatalogItemsListDto()
+        {
+            CatalogItems = [deserialized]
+        });
     }
 
     public async Task<Result> DeleteAsync(string id)

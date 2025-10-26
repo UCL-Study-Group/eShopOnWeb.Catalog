@@ -1,4 +1,5 @@
 using System.Diagnostics.Metrics;
+using System.Text.Json;
 using Catalog.Common.Models;
 using Catalog.Common.Models.Base;
 using Catalog.Infrastructure.Models;
@@ -123,6 +124,7 @@ public class MongoRepository<T> : IDbRepository<T> where T : BaseModel
                 return Result.Fail<T>($"Item with ID {entity.Id} already exists");
         
             await _collection.InsertOneAsync(entity);
+            
             return Result.Ok(entity);
         }
         catch (MongoWriteException ex) when (ex.WriteError?.Category == ServerErrorCategory.DuplicateKey)
@@ -135,7 +137,7 @@ public class MongoRepository<T> : IDbRepository<T> where T : BaseModel
         }
     }
 
-    public async Task<Result> UpdateAsync(T entity)
+    public async Task<Result<string>> UpdateAsync(T entity)
     {
         try
         {
@@ -146,9 +148,11 @@ public class MongoRepository<T> : IDbRepository<T> where T : BaseModel
             else
                 filter = Builders<T>.Filter.Eq(e => e.MongoId, entity.MongoId);
             
-            await _collection.ReplaceOneAsync(filter, entity);
+            var updatedEntity = await _collection.FindOneAndReplaceAsync(filter, entity);
             
-            return Result.Ok();
+            var jsonString = JsonSerializer.Serialize(updatedEntity);
+            
+            return Result.Ok(jsonString);
         } catch (Exception)
         {
             return Result.Fail("Couldn't update provided item");
