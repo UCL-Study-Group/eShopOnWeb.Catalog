@@ -2,20 +2,20 @@ using FluentResults;
 
 namespace Catalog.Infrastructure.Repositories.Interfaces;
 
-public interface IDbRepository<T>
+public interface IDbRepository<TEntity, TGet>
 {
     /// <summary>
     /// Retrieves all entities of the provided type from the database
     /// </summary>
     /// <returns>A collection of entities</returns>
-    Task<Result<IEnumerable<T>>> GetAllAsync(int? pageSize = null, int? pageIndex = null, string? brandId = null, string? typeId = null);
+    Task<Result<IEnumerable<TGet>>> GetAllAsync(int? pageSize = null, int? pageIndex = null, string? brandId = null, string? typeId = null);
     
     /// <summary>
     /// Retrieves the first entity with the provided id.
     /// </summary>
     /// <param name="id">The id of the type</param>
     /// <returns>The entity if found</returns>
-    Task<Result<T>> GetByIdAsync(string id);
+    Task<Result<TGet>> GetByIdAsync(string id);
     
     /// <summary>
     /// Retrieves the first entity with the provided id.
@@ -23,7 +23,7 @@ public interface IDbRepository<T>
     /// <param name="id"></param>
     /// <returns></returns>
     [Obsolete("Get by legacy will be replaced in the future")]
-    Task<Result<T>> GetByLegacyIdAsync(int id);
+    Task<Result<TGet>> GetByLegacyIdAsync(int id);
     
     
     /// <summary>
@@ -31,7 +31,7 @@ public interface IDbRepository<T>
     /// </summary>
     /// <param name="entity">The entity that is to be created</param>
     /// <returns>A result indicating success or failure</returns>
-    Task<Result<T>> CreateAsync(T entity);
+    Task<Result<TGet>> CreateAsync(TEntity entity);
     
     
     /// <summary>
@@ -39,7 +39,7 @@ public interface IDbRepository<T>
     /// </summary>
     /// <param name="entity">The entity which should be updated</param>
     /// <returns>A result indicating success or failure</returns>
-    Task<Result<string>> UpdateAsync(T entity);
+    Task<Result<TGet>> UpdateAsync(TEntity entity);
     
     
     /// <summary>

@@ -1,27 +1,27 @@
 using System.Text.Json;
 using Catalog.Application.Interfaces;
-using Catalog.Common.Dtos;
 using Catalog.Common.Dtos.Item;
 using Catalog.Common.Models;
 using Catalog.Infrastructure.Repositories.Interfaces;
 using FluentResults;
+using Mapster;
 
 namespace Catalog.Application.Services;
 
 public class ItemService : IItemService
 {
-    private readonly IDbRepository<CatalogItem> _itemDbRepository;
+    private readonly IDbRepository<CatalogItem, GetCatalogItemDto> _itemDbRepository;
     private readonly ICacheService _cacheService;
 
     public ItemService(
-        IDbRepository<CatalogItem> itemDbRepository, 
+        IDbRepository<CatalogItem, GetCatalogItemDto> itemDbRepository, 
         ICacheService cacheService)
     {
         _itemDbRepository = itemDbRepository;
         _cacheService = cacheService;
     }
     
-    public async Task<IEnumerable<GetCatalogItemDto>?> GetAllAsync(
+    public async Task<Result<IEnumerable<GetCatalogItemDto>>> GetAllAsync(
         int? pageSize, 
         int? pageIndex
         )
@@ -29,24 +29,12 @@ public class ItemService : IItemService
         var results = await _itemDbRepository.GetAllAsync(pageSize, pageIndex);
 
         if (results.IsFailed)
-            return null;
+            return Result.Fail(results.Errors);
         
-        var mapped = results.Value.Select(r => new GetCatalogItemDto()
-        {
-            Id = r.Id,
-            MongoId = r.MongoId,
-            Name = r.Name,
-            Price = r.Price,
-            PictureUri = r.PictureUri,
-            Description = r.Description,
-            CatalogBrandId = r.CatalogBrandId,
-            CatalogTypeId = r.CatalogTypeId
-        });
-        
-        return mapped;
+        return Result.Ok(results.Adapt<IEnumerable<GetCatalogItemDto>>());
     }
     
-    public async Task<IEnumerable<GetCatalogItemDto>?> GetAllAsync(
+    public async Task<Result<IEnumerable<GetCatalogItemDto>>> GetAllAsync(
         int? pageSize, 
         int? pageIndex,
         string? brandId,
@@ -56,7 +44,7 @@ public class ItemService : IItemService
         var results = await _itemDbRepository.GetAllAsync(pageSize, pageIndex, brandId, typeId);
 
         if (results.IsFailed)
-            return null;
+            return Result.Fail(results.Errors);
         
         var mapped = results.Value.Select( r => new GetCatalogItemDto()
         {
@@ -70,30 +58,20 @@ public class ItemService : IItemService
             CatalogTypeId = r.CatalogTypeId
         });
         
-        return mapped;
+        return Result.Ok(results.Adapt<IEnumerable<GetCatalogItemDto>>());
     }
 
-    public async Task<GetCatalogItemDto?> GetAsync(string id)
+    public async Task<Result<GetCatalogItemDto>> GetAsync(string id)
     {
         var result = await _itemDbRepository.GetByIdAsync(id);
 
         if (result.IsFailed)
-            return null;
+            return Result.Fail(result.Errors);
 
-        return new GetCatalogItemDto()
-        {
-            Id = result.Value.Id,
-            MongoId = result.Value.MongoId,
-            Name = result.Value.Name,
-            Price = result.Value.Price,
-            PictureUri = result.Value.PictureUri,
-            Description = result.Value.Description,
-            CatalogBrandId = result.Value.CatalogBrandId,
-            CatalogTypeId = result.Value.CatalogTypeId
-        };
+        return Result.Ok(result.Adapt<GetCatalogItemDto>());
     }
 
-    public async Task<CatalogItem?> CreateAsync(CreateCatalogItemDto catalogItem)
+    public async Task<Result<GetCatalogItemDto>> CreateAsync(CreateCatalogItemDto catalogItem)
     {
         var result = await _itemDbRepository.CreateAsync(new CatalogItem
         {
@@ -107,15 +85,15 @@ public class ItemService : IItemService
 
         await _cacheService.FlushCacheAsync("cache:/api/catalog-items");
 
-        return result.IsFailed ? null : result.Value;
+        return Result.Ok(result.Adapt<GetCatalogItemDto>());
     }
 
-    public async Task<Result<GetCatalogItemsListDto>> UpdateAsync(UpdateCatalogItemDto catalogItem)
+    public async Task<Result<GetCatalogItemDto>> UpdateAsync(UpdateCatalogItemDto catalogItem)
     {
         if (catalogItem.Id is null && string.IsNullOrEmpty(catalogItem.MongoId))
             return Result.Fail("You need to provide an ID");
         
-        Result<CatalogItem> existingBrand;
+        Result<GetCatalogItemDto> existingBrand;
 
         if (catalogItem.Id is not null)
             existingBrand = await _itemDbRepository.GetByLegacyIdAsync(catalogItem.Id.Value);
@@ -140,16 +118,8 @@ public class ItemService : IItemService
             return Result.Fail(response.Errors);
         
         await _cacheService.FlushCacheAsync("cache:/api/catalog-items");
-        
-        var deserialized = JsonSerializer.Deserialize<GetCatalogItemDto>(response.Value);
-        
-        if (deserialized is null)
-            return Result.Fail("Failed to deserialize brand");
-        
-        return Result.Ok(new GetCatalogItemsListDto()
-        {
-            CatalogItems = [deserialized]
-        });
+
+        return response;
     }
 
     public async Task<Result> DeleteAsync(string id)

@@ -10,11 +10,11 @@ namespace Catalog.Application.Services;
 
 public class BrandService : IBrandService
 {
-    private readonly IDbRepository<CatalogBrand> _dbRepository;
+    private readonly IDbRepository<CatalogBrand, GetCatalogBrandDto> _dbRepository;
     private readonly ICacheService _cacheService;
 
     public BrandService(
-        IDbRepository<CatalogBrand> dbRepository, 
+        IDbRepository<CatalogBrand, GetCatalogBrandDto> dbRepository, 
         ICacheService cacheService)
     {
         _dbRepository = dbRepository;
@@ -23,7 +23,7 @@ public class BrandService : IBrandService
 
     public async Task<string> GetBrandNameAsync(string id)
     {
-        Result<CatalogBrand> response; 
+        Result<GetCatalogBrandDto> response; 
         
         if (int.TryParse(id, out var idInt))
             response = await _dbRepository.GetByLegacyIdAsync(idInt);
@@ -33,7 +33,7 @@ public class BrandService : IBrandService
         return response.IsFailed ? string.Empty : response.Value.Name;
     }
 
-    public async Task<CatalogBrand?> CreateAsync(CreateCatalogBrandDto dto)
+    public async Task<Result<GetCatalogBrandDto>> CreateAsync(CreateCatalogBrandDto dto)
     {
         var response = await _dbRepository.CreateAsync(new CatalogBrand()
         {
@@ -43,12 +43,12 @@ public class BrandService : IBrandService
         
         await _cacheService.FlushCacheAsync("cache:/api/catalog-brands");
 
-        return response.IsFailed ? null : response.Value;
+        return response;
     }
 
-    public async Task<CatalogBrand?> GetAsync(string id)
+    public async Task<Result<GetCatalogBrandDto>> GetAsync(string id)
     {
-        Result<CatalogBrand> response; 
+        Result<GetCatalogBrandDto> response; 
         
         if (int.TryParse(id, out var idInt))
             response = await _dbRepository.GetByLegacyIdAsync(idInt);
@@ -58,19 +58,19 @@ public class BrandService : IBrandService
         return response.IsFailed ? null : response.Value;
     }
 
-    public async Task<IEnumerable<CatalogBrand>?> GetAllAsync(int? pageSize, int? pageIndex)
+    public async Task<Result<IEnumerable<GetCatalogBrandDto>>> GetAllAsync(int? pageSize, int? pageIndex)
     {
         var response = await _dbRepository.GetAllAsync(pageSize, pageIndex);
 
-        return response.IsFailed ? null : response.ValueOrDefault;
+        return response;
     }
 
-    public async Task<Result<GetCatalogBrandsListDto>> UpdateAsync(UpdateCatalogBrandDto dto)
+    public async Task<Result<GetCatalogBrandDto>> UpdateAsync(UpdateCatalogBrandDto dto)
     {
         if (dto.Id is null && string.IsNullOrEmpty(dto.MongoId))
             return Result.Fail("You need to provide an ID");
 
-        Result<CatalogBrand> existingBrand;
+        Result<GetCatalogBrandDto> existingBrand;
 
         if (dto.Id is not null)
             existingBrand = await _dbRepository.GetByLegacyIdAsync(dto.Id.Value);
@@ -84,7 +84,6 @@ public class BrandService : IBrandService
         {
             Id = existingBrand.Value.Id,
             Name = dto.Name,
-            MongoId = existingBrand.Value.MongoId
         };
         
         var response = await _dbRepository.UpdateAsync(updatedBrand);
@@ -93,16 +92,8 @@ public class BrandService : IBrandService
             return Result.Fail(response.Errors);
         
         await _cacheService.FlushCacheAsync("cache:/api/catalog-brands");
-        
-        var deserialized = JsonSerializer.Deserialize<GetCatalogBrandDto>(response.Value);
-        
-        if (deserialized is null)
-            return Result.Fail("Failed to deserialize brand");
-        
-        return Result.Ok(new GetCatalogBrandsListDto
-        {
-            CatalogBrands = [deserialized]
-        });
+
+        return response;
     }
 
     public async Task<Result> DeleteAsync(string id)
@@ -114,7 +105,7 @@ public class BrandService : IBrandService
 
     public async Task<string> GetNameAsync(string id)
     {
-        Result<CatalogBrand> response;
+        Result<GetCatalogBrandDto> response;
 
         if (int.TryParse(id, out var idInt))
             response = await _dbRepository.GetByLegacyIdAsync(idInt);

@@ -19,14 +19,14 @@ public class TypeController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<GetCatalogTypesListDto>> GetTypesAsync()
+    public async Task<ActionResult<GetCatalogTypeUpsertDto>> GetTypesAsync()
     {
         var response = await _typeService.GetAllAsync();
 
         if (response is null)
             return NotFound("Collection does not exists");
         
-        return Ok(new GetCatalogTypesListDto { CatalogTypes = response.Select(GetCatalogTypeDto.FromModel)});
+        return Ok(new GetCatalogTypeUpsertDto { CatalogTypes = response.Select(GetCatalogTypeDto.FromModel)});
     }
 
     [HttpGet("{id}")]
@@ -43,7 +43,7 @@ public class TypeController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<ActionResult<GetCatalogTypesListDto>> PostTypeAsync(
+    public async Task<ActionResult<GetCatalogTypeUpsertDto>> PostTypeAsync(
         [FromBody] CreateCatalogTypeDto model
         )
     {
@@ -56,7 +56,7 @@ public class TypeController : ControllerBase
     }
     
     [HttpPut]
-    public async Task<ActionResult<GetCatalogTypesListDto>> UpdateTypeAsync(
+    public async Task<ActionResult<GetCatalogTypeUpsertDto>> UpdateTypeAsync(
         [FromBody] UpdateCatalogTypeDto type
         )
     {

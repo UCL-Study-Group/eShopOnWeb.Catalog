@@ -17,7 +17,7 @@ public class GetCatalogBrandDto
     }
 }
 
-public class GetCatalogBrandsListDto
+public class GetCatalogBrandObjectDto
 {
-    public IEnumerable<GetCatalogBrandDto> CatalogBrands { get; set; } = [];
+    public required GetCatalogBrandDto CatalogBrands { get; set; }
 }

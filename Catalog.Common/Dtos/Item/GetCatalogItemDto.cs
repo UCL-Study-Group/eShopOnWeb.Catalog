@@ -12,7 +12,7 @@ public class GetCatalogItemDto
     public required int CatalogBrandId { get; init; }
 }
 
-public class GetCatalogItemsListDto
+public class GetCatalogItemObjectDto
 {
-    public required IEnumerable<GetCatalogItemDto> CatalogItems { get; set; }
+    public required GetCatalogItemDto CatalogItems { get; set; }
 }

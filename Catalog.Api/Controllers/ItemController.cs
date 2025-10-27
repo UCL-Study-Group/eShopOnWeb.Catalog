@@ -19,7 +19,7 @@ public class ItemController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<GetCatalogItemsListDto>> GetCatalogItemsAsync(
+    public async Task<ActionResult<GetCatalogItemObjectDto>> GetCatalogItemsAsync(
         int? pageSize, 
         int? pageIndex,
         string? brandId,
@@ -31,7 +31,7 @@ public class ItemController : ControllerBase
         if (response is null)
             return NotFound();
         
-        return Ok(new GetCatalogItemsListDto { CatalogItems = response });
+        return Ok(new GetCatalogItemObjectDto { CatalogItems = response });
     }
     
     [HttpGet("{id}")]
@@ -51,7 +51,7 @@ public class ItemController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<ActionResult<GetCatalogItemsListDto>> CreateCatalogItemAsync(
+    public async Task<ActionResult<GetCatalogItemObjectDto>> CreateCatalogItemAsync(
         [FromBody] CreateCatalogItemDto item
         )
     {
@@ -64,7 +64,7 @@ public class ItemController : ControllerBase
     }
 
     [HttpPut]
-    public async Task<ActionResult<GetCatalogItemsListDto>> UpdateCatalogItemAsync(
+    public async Task<ActionResult<GetCatalogItemObjectDto>> UpdateCatalogItemAsync(
         [FromBody] UpdateCatalogItemDto item
         )
     {

@@ -18,14 +18,14 @@ public class BrandController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<GetCatalogBrandsListDto>> GetBrandsAsync()
+    public async Task<ActionResult<GetCatalogBrandObjectDto>> GetBrandsAsync()
     {
         var response = await _brandService.GetAllAsync();
 
         if (response is null)
             return NotFound();
         
-        return Ok(new GetCatalogBrandsListDto { CatalogBrands = response.Select(GetCatalogBrandDto.FromModel)});
+        return Ok(new GetCatalogBrandObjectDto { CatalogBrands = response.Select(GetCatalogBrandDto.FromModel)});
     }
 
     [HttpGet("{id}")]
@@ -42,7 +42,7 @@ public class BrandController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<ActionResult<GetCatalogBrandsListDto>> CreateBrandAsync(
+    public async Task<ActionResult<GetCatalogBrandObjectDto>> CreateBrandAsync(
         [FromBody] CreateCatalogBrandDto brand
         )
     {
@@ -55,7 +55,7 @@ public class BrandController : ControllerBase
     }
 
     [HttpPut]
-    public async Task<ActionResult<GetCatalogBrandsListDto>> UpdateBrandAsync(
+    public async Task<ActionResult<GetCatalogBrandObjectDto>> UpdateBrandAsync(
         [FromBody] UpdateCatalogBrandDto brand
         )
     {

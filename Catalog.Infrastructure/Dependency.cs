@@ -46,7 +46,7 @@ public static class Dependency
             return new RedisRepository(connection, defaultExpiration);
         });
         
-        services.AddScoped(typeof(IDbRepository<>), typeof(MongoRepository<>));
+        services.AddScoped(typeof(IDbRepository<,>), typeof(MongoRepository<,>));
         
         return services;
     }

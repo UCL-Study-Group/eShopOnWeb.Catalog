@@ -18,7 +18,7 @@ public class GetCatalogTypeDto
     }
 }
 
-public class GetCatalogTypesListDto
+public class GetCatalogTypeUpsertDto
 {
-    public IEnumerable<GetCatalogTypeDto> CatalogTypes { get; set; } = [];
+    public required GetCatalogTypeDto CatalogTypes { get; set; }
 }
