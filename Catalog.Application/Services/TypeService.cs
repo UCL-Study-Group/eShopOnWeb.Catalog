@@ -5,6 +5,7 @@ using Catalog.Common.Dtos.Type;
 using Catalog.Common.Models;
 using Catalog.Infrastructure.Repositories.Interfaces;
 using FluentResults;
+using Mapster;
 
 namespace Catalog.Application.Services;
 
@@ -39,7 +40,7 @@ public class TypeService : ITypeService
         return response;
     }
 
-    public async Task<GetCatalogTypeDto?> GetAsync(string id)
+    public async Task<Result<GetCatalogTypeDto>> GetAsync(string id)
     {
         Result<GetCatalogTypeDto> response;
 
@@ -48,12 +49,12 @@ public class TypeService : ITypeService
         else 
             response = await _dbRepository.GetByIdAsync(id);
 
-        return response.IsFailed ? null : response.Value;
+        return response;
     }
 
     public async Task<string> GetNameAsync(string id)
     {
-        Result<CatalogType> response;
+        Result<GetCatalogTypeDto> response;
 
         if (int.TryParse(id, out var idInt))
             response = await _dbRepository.GetByLegacyIdAsync(idInt);
@@ -63,12 +64,12 @@ public class TypeService : ITypeService
         return response.IsFailed ? string.Empty : response.Value.Name;
     }
     
-    public async Task<Result<GetCatalogTypeUpsertDto>> UpdateAsync(UpdateCatalogTypeDto type)
+    public async Task<Result<GetCatalogTypeDto>> UpdateAsync(UpdateCatalogTypeDto type)
     {
         if (type.Id is null && string.IsNullOrEmpty(type.MongoId))
             return Result.Fail("You need to provide an ID");
 
-        Result<CatalogType> existingBrand;
+        Result<GetCatalogTypeDto> existingBrand;
 
         if (type.Id is not null)
             existingBrand = await _dbRepository.GetByLegacyIdAsync(type.Id.Value);
@@ -82,7 +83,6 @@ public class TypeService : ITypeService
         {
             Id = existingBrand.Value.Id,
             Name = type.Name,
-            MongoId = existingBrand.Value.MongoId
         };
         
         var response = await _dbRepository.UpdateAsync(updatedBrand);
@@ -91,16 +91,8 @@ public class TypeService : ITypeService
             return Result.Fail(response.Errors);
         
         await _cacheService.FlushCacheAsync("cache:/api/catalog-types");
-        
-        var deserialized = JsonSerializer.Deserialize<GetCatalogTypeDto>(response.Value);
-        
-        if (deserialized is null)
-            return Result.Fail("Failed to deserialize brand");
-        
-        return Result.Ok(new GetCatalogTypeUpsertDto()
-        {
-            CatalogTypes = deserialized
-        });
+
+        return response;
     }
 
     public async Task<Result> DeleteAsync(string id)
@@ -109,6 +101,8 @@ public class TypeService : ITypeService
             return Result.Fail("You much provide an id");
 
         var response = await _dbRepository.DeleteAsync(id);
+        
+        await _cacheService.FlushCacheAsync("cache:/api/catalog-types");
         
         return response.IsFailed ? Result.Fail(response.Errors) : Result.Ok();
     }

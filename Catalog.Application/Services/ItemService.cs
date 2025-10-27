@@ -58,7 +58,7 @@ public class ItemService : IItemService
             CatalogTypeId = r.CatalogTypeId
         });
         
-        return Result.Ok(results.Adapt<IEnumerable<GetCatalogItemDto>>());
+        return Result.Ok(results.Value.Adapt<IEnumerable<GetCatalogItemDto>>());
     }
 
     public async Task<Result<GetCatalogItemDto>> GetAsync(string id)
@@ -125,6 +125,8 @@ public class ItemService : IItemService
     public async Task<Result> DeleteAsync(string id)
     {
         var result = await _itemDbRepository.DeleteAsync(id);
+        
+        await _cacheService.FlushCacheAsync("cache:/api/catalog-items");
         
         return result.IsFailed ? Result.Fail(result.Errors) : Result.Ok();
     }

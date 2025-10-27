@@ -100,6 +100,8 @@ public class BrandService : IBrandService
     {
         var result = await _dbRepository.DeleteAsync(id);
         
+        await _cacheService.FlushCacheAsync("cache:/api/catalog-brands");
+        
         return result.IsFailed ? Result.Fail(result.Errors) : Result.Ok();
     }
 

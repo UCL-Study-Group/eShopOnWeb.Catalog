@@ -19,7 +19,7 @@ public class ItemController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<GetCatalogItemObjectDto>> GetCatalogItemsAsync(
+    public async Task<ActionResult<CatalogItemListResponse>> GetCatalogItemsAsync(
         int? pageSize, 
         int? pageIndex,
         string? brandId,
@@ -28,56 +28,68 @@ public class ItemController : ControllerBase
     {
         var response = await _itemService.GetAllAsync(pageSize, pageIndex, brandId, typeId);
 
-        if (response is null)
-            return NotFound();
+        if (response.IsFailed)
+            return Problem(response.Errors[0].Message);
         
-        return Ok(new GetCatalogItemObjectDto { CatalogItems = response });
+        return Ok(new CatalogItemListResponse { CatalogItems = response.Value });
     }
     
     [HttpGet("{id}")]
-    public async Task<ActionResult<object>> GetCatalogItemAsync(
+    public async Task<ActionResult<CatalogItemListResponse>> GetCatalogItemAsync(
         string id
         )
     {
         var response = await _itemService.GetAsync(id);
-
-        if (response is null)
-            return NotFound();
         
-        return Ok(new
+        if (response.IsFailed)
+            return Problem(response.Errors[0].Message);
+        
+        return Ok(new GetCatalogItemResponse()
         {
-            CatalogItems = new[] { response }
+            CatalogItem = response.Value
         });
     }
 
     [HttpPost]
-    public async Task<ActionResult<GetCatalogItemObjectDto>> CreateCatalogItemAsync(
+    public async Task<ActionResult<GetCatalogItemResponse>> CreateCatalogItemAsync(
         [FromBody] CreateCatalogItemDto item
         )
     {
         var response = await _itemService.CreateAsync(item);
+        
+        if (response.IsFailed)
+            return Problem(response.Errors[0].Message);
 
-        return response is null ? Problem("Failed to create catalog item. Try again") : Ok(new
+        return Ok(new GetCatalogItemResponse()
         {
-            CatalogItems = new[] { response }
+            CatalogItem = response.Value
         });
     }
 
     [HttpPut]
-    public async Task<ActionResult<GetCatalogItemObjectDto>> UpdateCatalogItemAsync(
+    public async Task<ActionResult<CatalogItemListResponse>> UpdateCatalogItemAsync(
         [FromBody] UpdateCatalogItemDto item
         )
     {
         var response = await _itemService.UpdateAsync(item);
         
-        return response.IsFailed ? Problem("Failed to update catalog item. Try again") : Ok(response.Value);
+        if (response.IsFailed)
+            return Problem(response.Errors[0].Message);
+        
+        return Ok(new GetCatalogItemResponse()
+        {
+            CatalogItem = response.Value
+        });
     }
 
     [HttpDelete("{id}")]
-    public async Task<ActionResult> DeleteCatalogItemAsync(string id)
+    public async Task<ActionResult<StatusDto>> DeleteCatalogItemAsync(string id)
     {
         var response = await _itemService.DeleteAsync(id);
         
-        return response.IsFailed ? Problem("Failed to delete item. Try again") : Ok();
+        return response.IsFailed ? Problem("Failed to delete item. Try again") : Ok(new StatusDto()
+        {
+            Status = "Deleted"
+        });
     }
 }
