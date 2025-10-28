@@ -5,6 +5,7 @@ using Catalog.Common.Models.Base;
 using Catalog.Infrastructure.Models;
 using Catalog.Infrastructure.Repositories.Interfaces;
 using FluentResults;
+using Mapster;
 using Microsoft.Extensions.Configuration;
 using MongoDB.Driver;
 
@@ -15,10 +16,11 @@ namespace Catalog.Infrastructure.Repositories;
 /// the classic CRUD operations. Though I've hardcoded, so the only real type it
 /// accepts is the CatalogItem
 /// </summary>
-/// <typeparam name="T"></typeparam>
-public class MongoRepository<T> : IDbRepository<T> where T : BaseModel
+/// <typeparam name="TEntity"></typeparam>
+/// <typeparam name="TGet"></typeparam>
+public class MongoRepository<TEntity, TGet> : IDbRepository<TEntity, TGet> where TEntity : BaseModel
 {
-    private readonly IMongoCollection<T> _collection;
+    private readonly IMongoCollection<TEntity> _collection;
     private readonly IMongoCollection<Counter> _counterCollection;
 
     public MongoRepository(IConfiguration configuration)
@@ -28,37 +30,38 @@ public class MongoRepository<T> : IDbRepository<T> where T : BaseModel
         // Bind credentials from configuration
         DbCredentials credentials = new();
         config.GetSection("DocumentDb").Bind(credentials);
-        
+
         // Create MongoDB client and get database
         var client = new MongoClient(credentials.ConnectionString);
         var database = client.GetDatabase(credentials.DatabaseName);
-        
+
         // Get the collection based on the type name
-        _collection = database.GetCollection<T>(typeof(T).Name);
-        
+        _collection = database.GetCollection<TEntity>(typeof(TEntity).Name);
+
         // For the counter collection
         _counterCollection = database.GetCollection<Counter>(nameof(Counter));
-        
+
         // Create unique index on Id field
-        var indexKeys = Builders<T>.IndexKeys.Ascending(e => e.Id);
+        var indexKeys = Builders<TEntity>.IndexKeys.Ascending(e => e.Id);
         var indexOptions = new CreateIndexOptions { Unique = true };
-        var indexModel = new CreateIndexModel<T>(indexKeys, indexOptions);
+        var indexModel = new CreateIndexModel<TEntity>(indexKeys, indexOptions);
         _collection.Indexes.CreateOneAsync(indexModel).Wait();
     }
-    
-    public async Task<Result<IEnumerable<T>>> GetAllAsync(int? pageSize, int? pageIndex, string? brandId = null, string? typeId = null)
+
+    public async Task<Result<IEnumerable<TGet>>> GetAllAsync(int? pageSize, int? pageIndex, string? brandId = null,
+        string? typeId = null)
     {
         try
         {
-            var filterBuilder = Builders<T>.Filter;
+            var filterBuilder = Builders<TEntity>.Filter;
             var filter = filterBuilder.Empty;
-            
+
             if (!string.IsNullOrEmpty(brandId))
                 filter &= filterBuilder.Eq("CatalogBrandId", brandId);
-            
+
             if (!string.IsNullOrEmpty(typeId))
                 filter &= filterBuilder.Eq("CatalogTypeId", typeId);
-            
+
             // Since we already have defined the connection and collection
             // we can simply retrieve the entities with Find()
             var items = await _collection
@@ -68,15 +71,15 @@ public class MongoRepository<T> : IDbRepository<T> where T : BaseModel
                 .Limit(pageSize)
                 .ToListAsync();
 
-            return Result.Ok(items.AsEnumerable());
+            return Result.Ok(items.AsEnumerable().Adapt<IEnumerable<TGet>>());
         }
         catch (Exception)
         {
             return Result.Fail("Could not retrieve collection");
         }
     }
-    
-    public async Task<Result<T>> GetByIdAsync(string id)
+
+    public async Task<Result<TGet>> GetByIdAsync(string id)
     {
         try
         {
@@ -84,15 +87,15 @@ public class MongoRepository<T> : IDbRepository<T> where T : BaseModel
             // specify which entity to retrieve
             var query = await _collection.FindAsync(e => e.MongoId == id);
 
-            return Result.Ok(query.FirstOrDefault());
+            return Result.Ok(query.FirstOrDefault().Adapt<TGet>());
         }
         catch (Exception)
         {
             return Result.Fail("Couldn't find an item with the specified id");
         }
     }
-    
-    public async Task<Result<T>> GetByLegacyIdAsync(int id)
+
+    public async Task<Result<TGet>> GetByLegacyIdAsync(int id)
     {
         try
         {
@@ -100,7 +103,7 @@ public class MongoRepository<T> : IDbRepository<T> where T : BaseModel
             // specify which entity to retrieve
             var query = await _collection.FindAsync(e => e.Id == id);
 
-            return Result.Ok(query.FirstOrDefault());
+            return Result.Ok(query.FirstOrDefault().Adapt<TGet>());
         }
         catch (Exception)
         {
@@ -108,24 +111,24 @@ public class MongoRepository<T> : IDbRepository<T> where T : BaseModel
         }
     }
 
-    public async Task<Result<T>> CreateAsync(T entity)
+    public async Task<Result<TGet>> CreateAsync(TEntity entity)
     {
         try
         {
             var idResult = await GetNextIdAsync(entity.Id);
             if (idResult.IsFailed)
-                return Result.Fail<T>("Failed to get ID");
-    
+                return Result.Fail("Failed to get ID");
+
             entity.Id = idResult.Value;
-        
+
             // Check if item with this ID already exists
             var existing = await _collection.Find(e => e.Id == entity.Id).FirstOrDefaultAsync();
             if (existing != null)
-                return Result.Fail<T>($"Item with ID {entity.Id} already exists");
-        
+                return Result.Fail($"Item with ID {entity.Id} already exists");
+
             await _collection.InsertOneAsync(entity);
-            
-            return Result.Ok(entity);
+
+            return Result.Ok(entity.Adapt<TGet>());
         }
         catch (MongoWriteException ex) when (ex.WriteError?.Category == ServerErrorCategory.DuplicateKey)
         {
@@ -137,23 +140,22 @@ public class MongoRepository<T> : IDbRepository<T> where T : BaseModel
         }
     }
 
-    public async Task<Result<string>> UpdateAsync(T entity)
+    public async Task<Result<TGet>> UpdateAsync(TEntity entity)
     {
         try
         {
-            FilterDefinition<T> filter;
-            
+            FilterDefinition<TEntity> filter;
+
             if (entity.Id is not null)
-                filter = Builders<T>.Filter.Eq(e => e.Id, entity.Id);
+                filter = Builders<TEntity>.Filter.Eq(e => e.Id, entity.Id);
             else
-                filter = Builders<T>.Filter.Eq(e => e.MongoId, entity.MongoId);
-            
+                filter = Builders<TEntity>.Filter.Eq(e => e.MongoId, entity.MongoId);
+
             var updatedEntity = await _collection.FindOneAndReplaceAsync(filter, entity);
-            
-            var jsonString = JsonSerializer.Serialize(updatedEntity);
-            
-            return Result.Ok(jsonString);
-        } catch (Exception)
+
+            return Result.Ok(updatedEntity.Adapt<TGet>());
+        }
+        catch (Exception)
         {
             return Result.Fail("Couldn't update provided item");
         }
@@ -167,7 +169,7 @@ public class MongoRepository<T> : IDbRepository<T> where T : BaseModel
                 await _collection.DeleteOneAsync(e => e.Id == idInt);
             else
                 await _collection.DeleteOneAsync(e => e.MongoId == id);
-            
+
             return Result.Ok();
         }
         catch (Exception)
@@ -176,20 +178,44 @@ public class MongoRepository<T> : IDbRepository<T> where T : BaseModel
         }
     }
 
+    private async Task InitializeCounterAsync()
+    {
+        var maxIdItem = await _collection
+            .Find(Builders<TEntity>.Filter.Empty)
+            .SortByDescending(e => e.Id)
+            .Limit(1)
+            .FirstOrDefaultAsync();
+
+        if (maxIdItem is null)
+            return;
+        
+        var maxId = maxIdItem.Id ?? 0;
+
+        var filter = Builders<Counter>.Filter.Eq(c => c.Id, typeof(TEntity).Name);
+        var update = Builders<Counter>.Update.Set(c => c.Sequence, maxId);
+
+        await _counterCollection.UpdateOneAsync(
+            filter,
+            update,
+            new UpdateOptions { IsUpsert = true });
+    }
+
     private async Task<Result<int>> GetNextIdAsync(int? requestedId = null)
     {
         try
         {
-            var filter = Builders<Counter>.Filter.Eq(c => c.Id, typeof(T).Name);
-        
+            await InitializeCounterAsync();
+            
+            var filter = Builders<Counter>.Filter.Eq(c => c.Id, typeof(TEntity).Name);
+
             if (requestedId.HasValue)
             {
                 var update = Builders<Counter>.Update.Max(c => c.Sequence, requestedId.Value);
                 await _counterCollection.UpdateOneAsync(
-                    filter, 
-                    update, 
+                    filter,
+                    update,
                     new UpdateOptions { IsUpsert = true });
-            
+
                 return Result.Ok(requestedId.Value);
             }
             else
@@ -200,7 +226,7 @@ public class MongoRepository<T> : IDbRepository<T> where T : BaseModel
                     IsUpsert = true,
                     ReturnDocument = ReturnDocument.After
                 };
-            
+
                 var counter = await _counterCollection.FindOneAndUpdateAsync(filter, update, options);
                 return Result.Ok(counter.Sequence);
             }

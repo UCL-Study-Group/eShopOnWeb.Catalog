@@ -2,12 +2,11 @@ using FluentResults;
 
 namespace Catalog.Application.Interfaces;
 
-public interface ICatalogService<TEntity, TCreateDto, TUpdateDto, TGetDto, TGetListDto> 
-    where TEntity : class
+public interface ICatalogService<TCreateDto, TUpdateDto, TGetDto> 
 {
-    Task<TEntity?> CreateAsync(TCreateDto dto);
-    Task<TGetDto?> GetAsync(string id);
-    Task<IEnumerable<TGetDto>?> GetAllAsync(int? pageSize = null, int? pageIndex = null);
-    Task<Result<TGetListDto>> UpdateAsync(TUpdateDto dto);
+    Task<Result<TGetDto>> CreateAsync(TCreateDto dto);
+    Task<Result<TGetDto>> GetAsync(string id);
+    Task<Result<IEnumerable<TGetDto>>> GetAllAsync(int? pageSize = null, int? pageIndex = null);
+    Task<Result<TGetDto>> UpdateAsync(TUpdateDto dto);
     Task<Result> DeleteAsync(string id);
 }
