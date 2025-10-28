@@ -17,9 +17,13 @@ resources:
 
 variables:
   imageRepository: '$(Build.Repository.Name)'
+  ${{ if eq(variables['Build.Reason'], 'PullRequest') }}:
+    shouldDeploy: false
+  ${{ else }}:
+    shouldDeploy: true
     
 stages:
   - template: templates/docker-pipeline.yml@templates
     parameters:
       imageRepository: $(imageRepository)
-      runDeploy: true
+      runDeploy: $(shouldDeploy)
