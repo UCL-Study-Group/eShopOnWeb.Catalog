@@ -15,15 +15,8 @@ resources:
       name: eShopOnWeb/eShopOnWeb.Pipelines
       ref: refs/heads/main
 
-variables:
-  imageRepository: '$(Build.Repository.Name)'
-  ${{ if eq(variables['Build.Reason'], 'PullRequest') }}:
-    shouldDeploy: false
-  ${{ else }}:
-    shouldDeploy: true
-    
 stages:
   - template: templates/docker-pipeline.yml@templates
     parameters:
       imageRepository: $(imageRepository)
-      runDeploy: $(shouldDeploy)
+      runDeploy: ${{ ne(variables['Build.Reason'], 'PullRequest') }}
