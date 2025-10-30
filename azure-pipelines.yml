@@ -15,6 +15,9 @@ resources:
       name: eShopOnWeb/eShopOnWeb.Pipelines
       ref: refs/heads/main
 
+variables:
+  imageRepository: '$(Build.Repository.Name)'
+    
 stages:
   - template: templates/docker-pipeline.yml@templates
     parameters:
