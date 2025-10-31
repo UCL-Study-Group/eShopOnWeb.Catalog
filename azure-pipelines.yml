@@ -22,4 +22,4 @@ stages:
   - template: templates/docker-pipeline.yml@templates
     parameters:
       imageRepository: $(imageRepository)
-      runDeploy: true
+      runDeploy: ${{ ne(variables['Build.Reason'], 'PullRequest') }}
