@@ -19,7 +19,8 @@ variables:
   imageRepository: '$(Build.Repository.Name)'
     
 stages:
-  - template: templates/docker-pipeline.yml@templates
+  - template: templates/service-pipeline-template.yml@templates
     parameters:
       imageRepository: $(imageRepository)
+      qodanaToken: $(QODANA_TOKEN)
       runDeploy: ${{ ne(variables['Build.Reason'], 'PullRequest') }}
