@@ -1,6 +1,6 @@
 services:
   catalog.api:
-    image: ${DOCKER_REGISTRY-}catalogapi
+    image: ${DOCKER_REGISTRY-}catalog
     build:
       context: .
       dockerfile: Catalog.Api/Dockerfile
